@@ -1,0 +1,1882 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PUNCH AVATAR — Fight Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Alfa+Slab+One&family=Rubik+Mono+One&family=Archivo+Narrow:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f2e8d5;
+    --paper-2: #e8dcc4;
+    --paper-3: #dccfb3;
+    --ink: #0f0e0d;
+    --blood: #c8102e;
+    --gold: #f4b400;
+    --ring-blue: #1d4ed8;
+    --champ-green: #059669;
+    --villain-purple: #7c2ba0;
+    --electric-cyan: #06b6d4;
+    --xai-slate: #334155;
+    --glm-pink: #ec4899;
+    --minimax-teal: #0d9488;
+    --mimo-orange: #ea580c;
+    --muse-magenta: #d946ef;
+    --shadow-hard: 6px 6px 0 var(--ink);
+    --shadow-soft: 3px 3px 0 var(--ink);
+    --shadow-xl: 10px 10px 0 var(--ink);
+  }
+
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes bounce-in { 0% { transform: scale(0.4) rotate(-10deg); opacity: 0; } 60% { transform: scale(1.06) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+  @keyframes shake { 0%,100% { transform: translate(0); } 20% { transform: translate(-2px,2px); } 40% { transform: translate(2px,-2px); } 60% { transform: translate(-2px,-2px); } 80% { transform: translate(2px,2px); } }
+  @keyframes reveal { from { opacity: 0; transform: translateY(20px) rotate(var(--tilt, 0deg)) scale(0.95); } to { opacity: 1; transform: translateY(0) rotate(var(--tilt, 0deg)) scale(1); } }
+  @keyframes glow-ready {
+    0%,100% { box-shadow: var(--shadow-soft), 0 0 0 0 rgba(244,180,0,0); }
+    50% { box-shadow: var(--shadow-soft), 0 0 0 4px rgba(244,180,0,0.4); }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(15,14,13,0.14) 1px, transparent 0),
+      radial-gradient(circle at 500px 200px, rgba(200,16,46,0.06), transparent 50%),
+      radial-gradient(circle at 100px 800px, rgba(244,180,0,0.07), transparent 50%);
+    background-size: 6px 6px, auto, auto;
+    color: var(--ink);
+    font-family: 'Archivo Narrow', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 40px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ticker */
+  .ticker {
+    background: var(--ink);
+    color: var(--gold);
+    padding: 10px 0;
+    overflow: hidden;
+    border-bottom: 4px solid var(--blood);
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .ticker-track {
+    display: flex;
+    white-space: nowrap;
+    width: fit-content;
+    animation: ticker 45s linear infinite;
+  }
+  .ticker-track span { padding: 0 40px; }
+  .ticker-track .fire { color: var(--blood); }
+  .ticker:hover .ticker-track { animation-play-state: paused; }
+
+  /* Header - fight poster */
+  header {
+    position: relative;
+    padding: 48px 24px 40px;
+    background: var(--ink);
+    color: var(--paper);
+    overflow: hidden;
+    border-bottom: 8px solid var(--blood);
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent 0, transparent 22px,
+      rgba(196,16,46,0.14) 22px, rgba(196,16,46,0.14) 23px
+    );
+    pointer-events: none;
+  }
+  header::after {
+    content: '★';
+    position: absolute;
+    right: -20px;
+    top: 40px;
+    font-size: 240px;
+    color: var(--blood);
+    opacity: 0.12;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .poster-inner {
+    position: relative;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 40px;
+    align-items: center;
+  }
+  .poster-copy { min-width: 0; }
+  .hero-scorecard {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    justify-self: end;
+    align-self: center;
+    z-index: 2;
+  }
+  .hero-stat {
+    background: var(--paper);
+    color: var(--ink);
+    padding: 10px 20px 8px;
+    border: 3px solid var(--paper);
+    box-shadow: 4px 4px 0 var(--blood);
+    min-width: 190px;
+    text-align: right;
+    transform: rotate(-1deg);
+  }
+  .hero-stat:nth-child(2) { transform: rotate(0.8deg); box-shadow: 4px 4px 0 var(--gold); }
+  .hero-stat:nth-child(3) { transform: rotate(-0.6deg); }
+  .hero-stat .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--blood);
+    font-weight: 700;
+  }
+  .hero-stat .value {
+    font-family: 'Rubik Mono One', monospace;
+    font-size: 42px;
+    line-height: 1;
+    color: var(--ink);
+    margin-top: 2px;
+  }
+  .hero-stat.hero-progress .value { color: var(--blood); }
+  .hero-progress-bar {
+    margin-top: 6px;
+    height: 6px;
+    background: var(--paper-3);
+    border: 1.5px solid var(--ink);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-progress-bar .fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--blood);
+    transition: width 0.4s ease;
+  }
+  @media (max-width: 900px) {
+    .poster-inner { grid-template-columns: 1fr; }
+    .hero-scorecard { justify-self: start; flex-direction: row; flex-wrap: wrap; }
+    .hero-stat { min-width: 130px; }
+  }
+  .marquee-line {
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 6px;
+    color: var(--gold);
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
+  .marquee-line::before, .marquee-line::after {
+    content: '★';
+    color: var(--blood);
+    font-size: 14px;
+  }
+  h1.title {
+    font-family: 'Bungee', display;
+    font-size: clamp(52px, 11vw, 132px);
+    line-height: 0.88;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--paper);
+    text-shadow:
+      4px 4px 0 var(--blood),
+      8px 8px 0 var(--gold);
+  }
+  h1.title .sub {
+    display: block;
+    font-size: 0.24em;
+    font-family: 'Alfa Slab One', serif;
+    color: var(--gold);
+    text-shadow: 2px 2px 0 var(--blood);
+    letter-spacing: 4px;
+    margin-top: 16px;
+    text-transform: uppercase;
+  }
+  .presented-by {
+    margin-top: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: rgba(242,232,213,0.65);
+    text-transform: uppercase;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-weight: 700;
+  }
+  .presented-by .pipe { color: var(--blood); }
+
+  /* Main */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 24px 0;
+  }
+
+  /* Tale of the Tape */
+  .tale-of-tape {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 32px 24px 24px;
+    margin-bottom: 32px;
+    border: 4px solid var(--ink);
+    box-shadow: var(--shadow-hard);
+    position: relative;
+    transform: rotate(-0.4deg);
+  }
+  .tale-of-tape::before {
+    content: '☰ TALE OF THE TAPE ☰';
+    position: absolute;
+    top: -15px;
+    left: 24px;
+    background: var(--gold);
+    color: var(--ink);
+    padding: 4px 14px;
+    font-family: 'Alfa Slab One', serif;
+    font-size: 14px;
+    letter-spacing: 2px;
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--blood);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .stat-group.full { grid-column: 1 / -1; }
+  .stat-group {
+    background: rgba(242,232,213,0.04);
+    border: 2px solid rgba(242,232,213,0.14);
+    padding: 10px 12px 12px;
+    position: relative;
+  }
+  .stat-group-label {
+    font-family: 'Alfa Slab One', serif;
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 2px dashed rgba(244,180,0,0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .stat-group-cells {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 4px;
+  }
+  .stat-group-cells.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .stat-cell {
+    text-align: center;
+    padding: 8px 4px;
+    border-right: 1px dashed rgba(242,232,213,0.14);
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-cell .value {
+    font-family: 'Rubik Mono One', monospace;
+    font-size: 30px;
+    line-height: 1;
+    color: var(--gold);
+  }
+  .stat-cell .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(242,232,213,0.7);
+    margin-top: 8px;
+    font-weight: 700;
+  }
+  .stat-cell.provider-anthropic .value { color: var(--blood); }
+  .stat-cell.provider-openai .value { color: #34d399; }
+  .stat-cell.provider-google .value { color: #60a5fa; }
+  .stat-cell.provider-xai .value { color: #cbd5e1; }
+  .stat-cell.provider-qwen .value { color: var(--gold); }
+  .stat-cell.provider-kimi .value { color: #c084fc; }
+  .stat-cell.provider-deepseek .value { color: var(--electric-cyan); }
+  .stat-cell.provider-glm .value { color: var(--glm-pink); }
+  .stat-cell.provider-minimax .value { color: #5eead4; }
+  .stat-cell.provider-mimo .value { color: var(--mimo-orange); }
+  .stat-cell.provider-muse .value { color: var(--muse-magenta); }
+  .stat-cell.runtime-zen .value { color: var(--gold); }
+  .stat-cell.runtime-go .value { color: var(--electric-cyan); }
+  .stat-cell.status-done .value { color: #34d399; }
+  .stat-cell.status-active .value { color: #60a5fa; }
+  .stat-cell.status-todo .value { color: var(--gold); }
+  .stat-cell.status-blocked .value { color: var(--blood); }
+  .stat-cell.pct .value { color: var(--gold); font-size: 34px; }
+
+  /* Toolbar */
+  .toolbar {
+    background: var(--paper);
+    border: 4px solid var(--ink);
+    box-shadow: var(--shadow-hard);
+    padding: 18px 20px;
+    margin-bottom: 40px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+    transform: rotate(0.3deg);
+    position: relative;
+  }
+  .toolbar::before {
+    content: '✦ CONTROL BOOTH ✦';
+    position: absolute;
+    top: -14px;
+    right: 24px;
+    background: var(--blood);
+    color: var(--paper);
+    padding: 4px 14px;
+    font-family: 'Alfa Slab One', serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--gold);
+  }
+  .toolbar label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .toolbar select, .toolbar input {
+    background: var(--paper-2);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    padding: 7px 10px;
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .toolbar select:focus, .toolbar input:focus {
+    outline: 3px solid var(--gold);
+    outline-offset: 1px;
+  }
+  .toolbar input { min-width: 200px; }
+  .view-switch {
+    display: flex;
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--blood);
+  }
+  .view-switch button {
+    background: var(--paper-2);
+    color: var(--ink);
+    border: none;
+    padding: 10px 18px;
+    font-family: 'Alfa Slab One', serif;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-right: 2px solid var(--ink);
+    transition: background 0.1s;
+  }
+  .view-switch button:last-child { border-right: none; }
+  .view-switch button.active {
+    background: var(--ink);
+    color: var(--gold);
+  }
+  .view-switch button:not(.active):hover {
+    background: var(--gold);
+  }
+  .btn-danger {
+    background: var(--blood);
+    color: var(--paper);
+    border: 3px solid var(--ink);
+    padding: 8px 16px;
+    font-family: 'Alfa Slab One', serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: transform 0.08s, box-shadow 0.08s;
+    margin-left: auto;
+  }
+  .btn-danger:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ink); }
+  .btn-danger:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+
+  /* Rounds */
+  .rounds { display: flex; flex-direction: column; gap: 56px; }
+  .round {
+    background: var(--paper);
+    border: 4px solid var(--ink);
+    padding: 28px 24px 24px;
+    position: relative;
+    box-shadow: var(--shadow-hard);
+  }
+  .round-number {
+    position: absolute;
+    top: -28px;
+    left: -12px;
+    background: var(--blood);
+    color: var(--paper);
+    font-family: 'Bungee', display;
+    font-size: 28px;
+    padding: 6px 18px;
+    border: 4px solid var(--ink);
+    letter-spacing: 3px;
+    transform: rotate(-4deg);
+    box-shadow: 4px 4px 0 var(--ink);
+    z-index: 2;
+  }
+  .round-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 20px;
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    padding-left: 130px;
+    border-bottom: 4px double var(--ink);
+    flex-wrap: wrap;
+  }
+  .round-header h2 {
+    font-family: 'Alfa Slab One', serif;
+    font-size: 28px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    line-height: 1.1;
+  }
+  .round-header .spec-ref {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink);
+    background: var(--gold);
+    padding: 5px 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border: 2px solid var(--ink);
+    font-weight: 700;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .fight-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  /* Kanban */
+  .kanban {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  .kanban-col {
+    background: var(--paper);
+    border: 4px solid var(--ink);
+    box-shadow: var(--shadow-hard);
+    display: flex;
+    flex-direction: column;
+    min-height: 240px;
+    transform: rotate(-0.2deg);
+  }
+  .kanban-col:nth-child(2n) { transform: rotate(0.3deg); }
+  .kanban-col h3 {
+    padding: 14px 16px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Bungee', display;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 4px solid var(--blood);
+  }
+  .kanban-col h3 .count {
+    background: var(--gold);
+    color: var(--ink);
+    padding: 2px 10px;
+    font-family: 'Rubik Mono One', monospace;
+    font-size: 14px;
+    border: 2px solid var(--paper);
+  }
+  .kanban-col.backlog h3 { border-bottom-color: rgba(242,232,213,0.4); }
+  .kanban-col.todo h3 { border-bottom-color: var(--gold); }
+  .kanban-col.in-progress h3 { border-bottom-color: #60a5fa; }
+  .kanban-col.done h3 { border-bottom-color: #34d399; }
+  .kanban-col.blocked h3 { border-bottom-color: var(--blood); }
+  .kanban-col .cards {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-height: 76vh;
+    overflow-y: auto;
+  }
+  .kanban-col .cards::-webkit-scrollbar { width: 8px; }
+  .kanban-col .cards::-webkit-scrollbar-track { background: var(--paper-2); }
+  .kanban-col .cards::-webkit-scrollbar-thumb { background: var(--ink); border: 1px solid var(--paper-2); }
+
+  /* Card - fight poster */
+  .card {
+    --tilt: 0deg;
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    padding: 14px;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    box-shadow: var(--shadow-soft);
+    transform: rotate(var(--tilt));
+    animation: reveal 0.4s ease backwards;
+  }
+  .card:nth-child(3n) { --tilt: -0.7deg; animation-delay: 0.05s; }
+  .card:nth-child(3n+1) { --tilt: 0.5deg; animation-delay: 0.1s; }
+  .card:nth-child(3n+2) { --tilt: -0.3deg; animation-delay: 0.15s; }
+  .card:hover {
+    transform: rotate(0) translate(-3px, -3px);
+    box-shadow: 8px 8px 0 var(--ink);
+    z-index: 5;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -3px; left: -3px; right: -3px;
+    height: 7px;
+    background: var(--ink);
+  }
+  .card.provider-anthropic::before { background: var(--blood); }
+  .card.provider-openai::before { background: var(--champ-green); }
+  .card.provider-google::before { background: var(--ring-blue); }
+  .card.provider-xai::before { background: var(--xai-slate); }
+  .card.provider-qwen::before { background: var(--gold); }
+  .card.provider-kimi::before { background: var(--villain-purple); }
+  .card.provider-deepseek::before { background: var(--electric-cyan); }
+  .card.provider-glm::before { background: var(--glm-pink); }
+  .card.provider-minimax::before { background: var(--minimax-teal); }
+  .card.provider-mimo::before { background: var(--mimo-orange); }
+  .card.provider-muse::before { background: var(--muse-magenta); }
+  .card.provider-other::before { background: var(--ink); }
+  .card.runtime-opencode-go { border-style: dashed; }
+
+  .card.ready-to-fight {
+    animation: reveal 0.4s ease backwards, glow-ready 2.2s ease infinite 0.5s;
+  }
+  .card.ready-to-fight::after {
+    content: 'READY TO FIGHT';
+    position: absolute;
+    top: -12px;
+    right: -8px;
+    background: var(--gold);
+    color: var(--ink);
+    font-family: 'Bungee', display;
+    font-size: 9px;
+    padding: 3px 8px;
+    letter-spacing: 1.5px;
+    border: 2px solid var(--ink);
+    transform: rotate(6deg);
+    box-shadow: 2px 2px 0 var(--ink);
+    z-index: 3;
+  }
+  .card.status-done { opacity: 0.7; }
+  .card.status-done .card-title { text-decoration: line-through; text-decoration-color: var(--blood); text-decoration-thickness: 2px; }
+  .card.status-blocked { border-color: var(--blood); }
+
+  .card-topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 6px;
+    margin-bottom: 8px;
+  }
+  .card-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink);
+    background: var(--gold);
+    padding: 2px 7px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border: 1.5px solid var(--ink);
+  }
+  .card-hours {
+    font-family: 'Rubik Mono One', monospace;
+    font-size: 14px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .card-hours::before {
+    content: '⏱';
+    color: var(--blood);
+    font-size: 12px;
+  }
+  .card-title {
+    font-family: 'Alfa Slab One', serif;
+    font-size: 15px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: 10px 0 12px;
+    letter-spacing: 0.5px;
+  }
+  .card-badges {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1.5px dashed rgba(15,14,13,0.35);
+  }
+  .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    border: 1.5px solid var(--ink);
+  }
+  .badge-provider-anthropic { background: var(--blood); color: var(--paper); }
+  .badge-provider-openai { background: var(--champ-green); color: var(--paper); }
+  .badge-provider-google { background: var(--ring-blue); color: var(--paper); }
+  .badge-provider-xai { background: var(--xai-slate); color: var(--paper); }
+  .badge-provider-qwen { background: var(--gold); color: var(--ink); }
+  .badge-provider-kimi { background: var(--villain-purple); color: var(--paper); }
+  .badge-provider-deepseek { background: var(--electric-cyan); color: var(--ink); }
+  .badge-provider-glm { background: var(--glm-pink); color: var(--paper); }
+  .badge-provider-minimax { background: var(--minimax-teal); color: var(--paper); }
+  .badge-provider-mimo { background: var(--mimo-orange); color: var(--paper); }
+  .badge-provider-muse { background: var(--muse-magenta); color: var(--paper); }
+  .badge-provider-other { background: var(--paper-3); color: var(--ink); }
+  .badge-runtime-opencode { background: var(--ink); color: var(--gold); }
+  .badge-runtime-opencode-go { background: var(--gold); color: var(--ink); border-color: var(--ink); }
+  .badge-phase { background: var(--paper-3); color: var(--ink); }
+  .badge-status-backlog { background: var(--paper-3); color: var(--ink); }
+  .badge-status-todo { background: var(--gold); color: var(--ink); }
+  .badge-status-in-progress { background: var(--ring-blue); color: var(--paper); }
+  .badge-status-done { background: var(--champ-green); color: var(--paper); }
+  .badge-status-blocked { background: var(--blood); color: var(--paper); }
+  .badge-comments { background: var(--ink); color: var(--gold); }
+
+  /* Comments */
+  .comments-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .comment {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    padding: 10px 12px;
+    position: relative;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .comment-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .comment-author {
+    font-family: 'Alfa Slab One', serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1.5px solid var(--ink);
+    background: var(--paper-2);
+  }
+  .comment-author.author-anthropic { background: var(--blood); color: var(--paper); }
+  .comment-author.author-openai { background: var(--champ-green); color: var(--paper); }
+  .comment-author.author-google { background: var(--ring-blue); color: var(--paper); }
+  .comment-author.author-xai { background: var(--xai-slate); color: var(--paper); }
+  .comment-author.author-qwen { background: var(--gold); color: var(--ink); }
+  .comment-author.author-kimi { background: var(--villain-purple); color: var(--paper); }
+  .comment-author.author-deepseek { background: var(--electric-cyan); color: var(--ink); }
+  .comment-author.author-glm { background: var(--glm-pink); color: var(--paper); }
+  .comment-author.author-minimax { background: var(--minimax-teal); color: var(--paper); }
+  .comment-author.author-mimo { background: var(--mimo-orange); color: var(--paper); }
+  .comment-author.author-muse { background: var(--muse-magenta); color: var(--paper); }
+  .comment-author.author-other { background: var(--paper-3); color: var(--ink); }
+  .comment-author.author-human { background: var(--gold); color: var(--ink); }
+  .comment-ts {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink);
+    opacity: 0.55;
+    letter-spacing: 1px;
+  }
+  .comment-body {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+  .comment-del {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: transparent;
+    border: none;
+    color: var(--blood);
+    font-family: 'Bungee', display;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 2px 6px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .comment:hover .comment-del { opacity: 1; }
+  .comment-del:hover { background: var(--blood); color: var(--paper); }
+  .comment-seed { border-style: dashed; }
+  .comment-seed .comment-del { display: none; }
+
+  .comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: var(--paper-2);
+    border: 2px solid var(--ink);
+  }
+  .comment-form-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .comment-form select {
+    background: var(--paper);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    padding: 6px 8px;
+    font-family: 'Alfa Slab One', serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .comment-form textarea {
+    width: 100%;
+    background: var(--paper);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    padding: 8px 10px;
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 60px;
+  }
+  .comment-form textarea:focus, .comment-form select:focus {
+    outline: 3px solid var(--gold);
+    outline-offset: 1px;
+  }
+  .comment-form button {
+    background: var(--ink);
+    color: var(--gold);
+    border: 2px solid var(--ink);
+    padding: 8px 16px;
+    font-family: 'Alfa Slab One', serif;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--blood);
+    align-self: flex-start;
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  .comment-form button:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--blood); }
+  .comment-form button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--blood); }
+
+  .deps-strip {
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+  }
+  .deps-strip .deps-label {
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    color: var(--ink);
+    opacity: 0.55;
+    margin-right: 2px;
+  }
+  .dep-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 5px 1px 4px;
+    border: 1.5px solid var(--ink);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .dep-chip.dep-done { background: var(--champ-green); color: var(--paper); }
+  .dep-chip.dep-done::before { content: '✓'; margin-right: 2px; }
+  .dep-chip.dep-in-progress { background: var(--ring-blue); color: var(--paper); }
+  .dep-chip.dep-in-progress::before { content: '▶'; margin-right: 2px; }
+  .dep-chip.dep-blocked { background: var(--blood); color: var(--paper); }
+  .dep-chip.dep-blocked::before { content: '⚠'; margin-right: 2px; }
+  .dep-chip.dep-todo { background: var(--paper-2); color: var(--ink); }
+  .dep-chip.dep-todo::before { content: '○'; margin-right: 2px; }
+  .dep-chip.dep-backlog { background: var(--paper-3); color: var(--ink); opacity: 0.7; }
+  .dep-chip.dep-backlog::before { content: '·'; margin-right: 2px; }
+  .deps-summary {
+    margin-left: auto;
+    font-size: 9px;
+    background: var(--ink);
+    color: var(--gold);
+    padding: 1px 6px;
+    letter-spacing: 1px;
+    font-weight: 700;
+  }
+  .deps-summary.all-done { background: var(--champ-green); color: var(--paper); }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,14,13,0.86);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    z-index: 100;
+    overflow-y: auto;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-overlay.open .modal { animation: bounce-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .modal {
+    background: var(--paper);
+    border: 6px solid var(--ink);
+    max-width: 760px;
+    width: 100%;
+    padding: 36px 32px 32px;
+    position: relative;
+    box-shadow: var(--shadow-xl);
+  }
+  .modal-topband {
+    background: var(--ink);
+    color: var(--gold);
+    padding: 5px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 16px;
+    transform: rotate(-1deg);
+    font-weight: 700;
+    box-shadow: 3px 3px 0 var(--blood);
+  }
+  .modal h2 {
+    font-family: 'Bungee', display;
+    font-size: clamp(24px, 4vw, 36px);
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+  .modal .task-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--blood);
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    font-weight: 700;
+  }
+  .modal .desc {
+    background: var(--paper-2);
+    border-left: 6px solid var(--blood);
+    padding: 16px 18px;
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink);
+    margin-bottom: 24px;
+  }
+  .modal .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .field {
+    background: var(--paper);
+    padding: 12px 14px;
+    border: 2px solid var(--ink);
+  }
+  .field-full { grid-column: span 2; }
+  .field-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    color: var(--blood);
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+    font-weight: 700;
+  }
+  .field-value {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .modal .files ul { list-style: none; }
+  .modal .files li {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 5px 0 5px 22px;
+    color: var(--ink);
+    position: relative;
+  }
+  .modal .files li::before {
+    content: '›';
+    position: absolute;
+    left: 4px;
+    color: var(--blood);
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1;
+  }
+  .modal .deps-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .modal .deps-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background: var(--paper-2);
+    border: 2px solid var(--ink);
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 13px;
+  }
+  .modal .deps-list li.dep-status-done { background: rgba(5,150,105,0.18); border-color: var(--champ-green); }
+  .modal .deps-list li.dep-status-in-progress { background: rgba(29,78,216,0.15); border-color: var(--ring-blue); }
+  .modal .deps-list li.dep-status-blocked { background: rgba(200,16,46,0.15); border-color: var(--blood); }
+  .modal .deps-list li .dep-id {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ink);
+    background: var(--gold);
+    padding: 2px 6px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-size: 11px;
+    border: 1.5px solid var(--ink);
+  }
+  .modal .deps-list li .dep-status-badge {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 2px 7px;
+    border: 1.5px solid var(--ink);
+    font-weight: 700;
+  }
+  .modal .deps-list li .dep-status-badge.st-done { background: var(--champ-green); color: var(--paper); }
+  .modal .deps-list li .dep-status-badge.st-in-progress { background: var(--ring-blue); color: var(--paper); }
+  .modal .deps-list li .dep-status-badge.st-todo { background: var(--gold); color: var(--ink); }
+  .modal .deps-list li .dep-status-badge.st-backlog { background: var(--paper-3); color: var(--ink); }
+  .modal .deps-list li .dep-status-badge.st-blocked { background: var(--blood); color: var(--paper); }
+
+  .status-picker {
+    display: flex;
+    gap: 5px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .status-picker button {
+    padding: 7px 12px;
+    border: 2px solid var(--ink);
+    background: var(--paper-2);
+    color: var(--ink);
+    cursor: pointer;
+    font-family: 'Alfa Slab One', serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  .status-picker button:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+  .status-picker button.active { background: var(--ink); color: var(--gold); box-shadow: 3px 3px 0 var(--blood); }
+
+  .close-btn {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    background: var(--blood);
+    color: var(--paper);
+    border: 4px solid var(--ink);
+    width: 46px;
+    height: 46px;
+    font-size: 20px;
+    cursor: pointer;
+    font-family: 'Bungee', display;
+    box-shadow: 4px 4px 0 var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+  }
+  .close-btn:hover { animation: shake 0.3s; }
+
+  /* Legend */
+  .legend {
+    margin-top: 48px;
+    background: var(--paper);
+    border: 4px solid var(--ink);
+    padding: 28px 24px 24px;
+    box-shadow: var(--shadow-hard);
+    position: relative;
+  }
+  .legend::before {
+    content: '☆ CORNER GUIDE ☆';
+    position: absolute;
+    top: -15px;
+    left: 24px;
+    background: var(--gold);
+    color: var(--ink);
+    padding: 4px 14px;
+    font-family: 'Alfa Slab One', serif;
+    font-size: 14px;
+    letter-spacing: 2px;
+    border: 3px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--blood);
+  }
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin-top: 4px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border: 2px solid var(--ink);
+    background: var(--paper-2);
+  }
+  .legend-swatch {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--ink);
+    flex-shrink: 0;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .legend-swatch.anthropic { background: var(--blood); }
+  .legend-swatch.openai { background: var(--champ-green); }
+  .legend-swatch.google { background: var(--ring-blue); }
+  .legend-swatch.xai { background: var(--xai-slate); }
+  .legend-swatch.qwen { background: var(--gold); }
+  .legend-swatch.kimi { background: var(--villain-purple); }
+  .legend-swatch.deepseek { background: var(--electric-cyan); }
+  .legend-swatch.glm { background: var(--glm-pink); }
+  .legend-swatch.minimax { background: var(--minimax-teal); }
+  .legend-swatch.mimo { background: var(--mimo-orange); }
+  .legend-swatch.muse { background: var(--muse-magenta); }
+  .legend-swatch.other { background: var(--paper-3); }
+  .legend-item strong {
+    font-family: 'Alfa Slab One', serif;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .legend-item p {
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .footer-stamp {
+    text-align: center;
+    margin-top: 48px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--ink);
+    opacity: 0.55;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    background: var(--paper);
+    border: 4px dashed var(--ink);
+    font-family: 'Alfa Slab One', serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--ink);
+    opacity: 0.6;
+  }
+  .empty-state .big {
+    font-family: 'Bungee', display;
+    font-size: 48px;
+    color: var(--blood);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  /* Responsive */
+  @media (max-width: 1200px) {
+    .kanban { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 720px) {
+    header { padding: 32px 20px 28px; }
+    .kanban { grid-template-columns: 1fr; }
+    .modal .grid { grid-template-columns: 1fr; }
+    .field-full { grid-column: span 1; }
+    .round-header { padding-left: 0; padding-top: 30px; }
+    .round-number { left: 12px; top: -22px; font-size: 20px; padding: 4px 12px; }
+    h1.title { font-size: 52px; }
+    .stats-grid { grid-template-columns: repeat(3, 1fr); }
+    .toolbar { padding: 16px 14px; }
+    .btn-danger { margin-left: 0; }
+    main { padding: 32px 16px 0; }
+    .close-btn { top: -14px; right: -14px; width: 38px; height: 38px; font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ticker">
+  <div class="ticker-track">
+    <span>★ ONE NIGHT ONLY ★</span>
+    <span class="fire">CODE VS CHAOS</span>
+    <span>★ 56 FIGHTS · 9 ROUNDS ★</span>
+    <span>NAKAMA BACKEND HEAVYWEIGHT</span>
+    <span class="fire">★ OPUS · SONNET · HAIKU · OPENCODE · DEEPSEEK ★</span>
+    <span>WINNER TAKES PRODUCTION</span>
+    <span>★ ONE NIGHT ONLY ★</span>
+    <span class="fire">CODE VS CHAOS</span>
+    <span>★ 56 FIGHTS · 9 ROUNDS ★</span>
+    <span>NAKAMA BACKEND HEAVYWEIGHT</span>
+    <span class="fire">★ OPUS · SONNET · HAIKU · OPENCODE · DEEPSEEK ★</span>
+    <span>WINNER TAKES PRODUCTION</span>
+  </div>
+</div>
+
+<header>
+  <div class="poster-inner">
+    <div class="poster-copy">
+      <div class="marquee-line">TONIGHT · MAIN EVENT · TITLE FIGHT</div>
+      <h1 class="title">Punch<br/>Avatar<span class="sub">— Fight Card ·  2026 —</span></h1>
+      <div class="presented-by">
+        <span>9 ROUNDS</span><span class="pipe">|</span>
+        <span>MULTI-MODEL CORNER</span><span class="pipe">|</span>
+        <span>PROMOTED BY OPENCODE</span>
+      </div>
+    </div>
+    <div class="hero-scorecard" id="hero-scorecard">
+      <!-- injected by renderStats -->
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="tale-of-tape">
+    <div class="stats-grid" id="stats"></div>
+  </section>
+
+  <section class="toolbar">
+    <div class="view-switch">
+      <button data-view="order" class="active">Fight Card</button>
+      <button data-view="kanban">Kanban</button>
+    </div>
+
+    <label>Round</label>
+    <select id="filter-phase"><option value="all">All rounds</option></select>
+
+    <label>Provider</label>
+    <select id="filter-provider">
+      <option value="all">All providers</option>
+    </select>
+
+    <label>Runtime</label>
+    <select id="filter-runtime">
+      <option value="all">Zen + Go</option>
+      <option value="opencode">Zen only</option>
+      <option value="opencode-go">Go only</option>
+    </select>
+
+    <label>Search</label>
+    <input type="text" id="search" placeholder="fighter, file, id..." />
+
+    <button id="reset-progress" class="btn-danger">Reset Card</button>
+  </section>
+
+  <div id="content"></div>
+
+  <section class="legend">
+    <div class="legend-grid" id="legend-grid"></div>
+  </section>
+
+  <div class="footer-stamp">
+    ★ ★ ★ FIGHT NIGHT · PUNCH AVATAR · GENERATED 2026-08-18 · MAY THE BEST CODE WIN ★ ★ ★
+  </div>
+</main>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="close-btn" id="close-modal" aria-label="Close">✕</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ---------- DATA ----------
+const DATA = {
+  "phases": [
+    {"id": 1, "name": "Fundación Nakama", "spec": "00-arquitectura-nakama"},
+    {"id": 2, "name": "Auth y Perfil", "spec": "01-auth-perfil"},
+    {"id": 3, "name": "Avatar IA", "spec": "02-avatar-ia"},
+    {"id": 4, "name": "Combate Core", "spec": "03-combate-core"},
+    {"id": 5, "name": "Versus Amistoso", "spec": "04-versus-amistoso"},
+    {"id": 6, "name": "Carrera PvE", "spec": "05-carrera-pve"},
+    {"id": 7, "name": "Gamificación", "spec": "06-gamificacion"},
+    {"id": 8, "name": "Versus Ranked", "spec": "07-versus-ranked"},
+    {"id": 9, "name": "Pulido", "spec": "08-pulido"}
+  ],
+  "tasks": [
+    {"id": "T-001", "phase": 1, "title": "docker-compose.yml con Nakama + Postgres", "description": "Servicios nakama:3.x y postgres:15, red interna, volumen persistente, healthchecks. Puertos 7350 (client), 7351 (console), 7349 (grpc).", "model": "opencode-go/glm-5.1", "reason": "Config docker-compose estático. GLM Go barato y consistente para YAML.", "status": "todo", "dependencies": [], "estimateHours": 1, "files": ["docker-compose.yml"], "comments": []},
+    {"id": "T-002", "phase": 1, "title": "nakama.yml con runtime.js_entrypoint", "description": "Configura runtime TS apuntando a build/index.js, log level, session token TTL.", "model": "opencode-go/mimo-v2.5", "reason": "YAML corto de config. MiMo Go maneja bien archivos puntuales.", "status": "todo", "dependencies": ["T-001"], "estimateHours": 0.5, "files": ["nakama.yml"], "comments": []},
+    {"id": "T-003", "phase": 1, "title": "Setup proyecto TypeScript (tsconfig, package.json, build)", "description": "tsconfig target es2020 (Goja compat), esbuild bundling a build/index.js. Scripts npm build/dev.", "model": "opencode-go/qwen3.8-max", "reason": "Scaffolding TS project. Qwen Max Go excelente con estructura repetitiva.", "status": "todo", "dependencies": [], "estimateHours": 1, "files": ["tsconfig.json", "package.json", "esbuild.config.mjs"], "comments": []},
+    {"id": "T-004", "phase": 1, "title": "InitModule con RPC ping y match handler dummy", "description": "Punto de entrada TS. Registra RPC 'ping' que devuelve pong, y match handler 'combat' vacío con las 7 funciones estándar.", "model": "opencode/gpt-5.4", "reason": "InitModule + registro RPCs Nakama. GPT 5.4 sólido en integraciones estándar.", "status": "todo", "dependencies": ["T-003"], "estimateHours": 2, "files": ["src/main.ts", "src/rpcs/ping.ts", "src/matches/combat.ts"], "comments": []},
+    {"id": "T-005", "phase": 1, "title": "Verificar boot end-to-end y healthcheck", "description": "docker compose up, curl :7350/healthcheck, llamar RPC ping desde consola, verificar log de InitModule.", "model": "opencode-go/glm-5.1", "reason": "Verificación curl + logs. Barato, cheap task.", "status": "todo", "dependencies": ["T-001", "T-002", "T-004"], "estimateHours": 0.5, "files": [], "comments": []},
+    {"id": "T-006", "phase": 2, "title": "Validador de username (regex + longitud)", "description": "Función pura: alfanumérico, 3-20 chars, no reservadas (admin, root, null). Retorna {valid, reason}.", "model": "opencode-go/deepseek-v4-flash", "reason": "Validador puro (regex). DeepSeek Flash cost-optimized para pure functions.", "status": "todo", "dependencies": ["T-004"], "estimateHours": 0.5, "files": ["src/lib/username.ts"], "comments": []},
+    {"id": "T-007", "phase": 2, "title": "RPC register_profile con authenticateCustom", "description": "Recibe username, valida (T-006), verifica unicidad en Storage, autentica con authenticateCustom customId=username, crea entrada 'profiles' con defaults del PRD §5.", "model": "opencode/claude-sonnet-4-6", "reason": "RPC con storage + auth + validación. Sonnet balancea capacidad y costo.", "status": "todo", "dependencies": ["T-006"], "estimateHours": 3, "files": ["src/rpcs/register_profile.ts"], "comments": []},
+    {"id": "T-008", "phase": 2, "title": "RPC get_profile", "description": "Lee colección 'profiles' por userId autenticado, retorna perfil completo o 404.", "model": "opencode-go/minimax-m2.5", "reason": "Lectura simple de storage. MiniMax M2.5 Go alcanza.", "status": "todo", "dependencies": ["T-007"], "estimateHours": 0.5, "files": ["src/rpcs/get_profile.ts"], "comments": []},
+    {"id": "T-009", "phase": 2, "title": "RPC update_display_name", "description": "Cambia displayName (mutable), NO username. Valida longitud, sanitiza.", "model": "opencode-go/glm-5.1", "reason": "Update trivial. GLM Go.", "status": "todo", "dependencies": ["T-007"], "estimateHours": 0.5, "files": ["src/rpcs/update_display_name.ts"], "comments": []},
+    {"id": "T-010", "phase": 2, "title": "Tests RPCs de auth/perfil", "description": "Tests de integración: registro exitoso, username duplicado, get profile, update name. Contra Nakama en Docker de test.", "model": "opencode-go/deepseek-v4-flash", "reason": "Tests integración patrón repetitivo. Flash barato.", "status": "todo", "dependencies": ["T-007", "T-008", "T-009"], "estimateHours": 2, "files": ["tests/auth.spec.ts"], "comments": []},
+    {"id": "T-011", "phase": 2, "title": "UI cliente: pantalla de registro", "description": "Componente con input username, validación en vivo (llama T-006 en cliente), botón 'empezar'. Muestra error si duplicado. Guarda session token.", "model": "opencode/gpt-5.4", "reason": "UI con estado + validación en vivo. GPT 5.4 fuerte en React.", "status": "todo", "dependencies": ["T-007"], "estimateHours": 3, "files": ["client/src/screens/Register.tsx"], "comments": []},
+    {"id": "T-012", "phase": 3, "title": "Endpoint de subida de foto (presigned URL a Cloudinary)", "description": "RPC upload_photo_url que genera presigned URL a Cloudinary. Cliente sube directo. Retorna URL final.", "model": "opencode/kimi-k3", "reason": "Integración Cloudinary con firma. Kimi K3 sólido con APIs externas.", "status": "todo", "dependencies": ["T-007"], "estimateHours": 2, "files": ["src/rpcs/upload_photo_url.ts"], "comments": []},
+    {"id": "T-013", "phase": 3, "title": "Detección de rostro cliente-side con face-api.js", "description": "Preview de foto, bounding box del rostro, rechazo si no detecta. Recorte 1:1 antes de subir.", "model": "opencode/gemini-3.1-pro", "reason": "Canvas + face-api.js + UX. Gemini Pro bueno con librerías visuales.", "status": "todo", "dependencies": ["T-011"], "estimateHours": 3, "files": ["client/src/lib/face-detect.ts", "client/src/components/PhotoUpload.tsx"], "comments": []},
+    {"id": "T-014", "phase": 3, "title": "Adaptador Replicate InstantID", "description": "Cliente HTTP para Replicate API: crear prediction, poll de estado, retornar URL final. Retry con backoff.", "model": "opencode/gpt-5.5", "reason": "HTTP client con retry/polling. GPT 5.5 confiable en async patterns.", "status": "todo", "dependencies": ["T-004"], "estimateHours": 3, "files": ["src/lib/replicate.ts"], "comments": []},
+    {"id": "T-015", "phase": 3, "title": "Data: plantilla de prompts por estilo", "description": "Constantes con prompt positivo/negativo y params por estilo (pixar_3d, anime_shonen, comic_retro, chibi, pixel_16bit).", "model": "opencode-go/glm-5.1", "reason": "Constantes prompts. Data estática.", "status": "todo", "dependencies": [], "estimateHours": 0.5, "files": ["src/data/avatar-prompts.ts"], "comments": []},
+    {"id": "T-016", "phase": 3, "title": "RPC generate_avatar", "description": "Recibe {photoUrl, style}, arma prompt (T-015), llama Replicate (T-014), guarda avatarUrl+avatarStyle en perfil. Idempotente por hash.", "model": "opencode/claude-opus-4-7", "reason": "Orquesta API costosa + storage + idempotencia. Opus por robustez.", "status": "todo", "dependencies": ["T-014", "T-015", "T-007"], "estimateHours": 4, "files": ["src/rpcs/generate_avatar.ts"], "comments": []},
+    {"id": "T-017", "phase": 3, "title": "UI: flow de consentimiento + selector de estilo", "description": "Checkbox obligatorio de consentimiento, cards con preview de estilos, loader durante generación con progreso.", "model": "opencode/gemini-3.1-pro", "reason": "UI multi-estado con previews. Gemini Pro fuerte en layouts complejos.", "status": "todo", "dependencies": ["T-013", "T-016"], "estimateHours": 3, "files": ["client/src/screens/AvatarStudio.tsx"], "comments": []},
+    {"id": "T-018", "phase": 4, "title": "Definir opcodes y tipos de mensajes cliente/servidor", "description": "Enum de opcodes (PUNCH_LEFT, PUNCH_RIGHT, BLOCK_START, BLOCK_END, SPECIAL, TELEGRAPH, STRIKE, STATE_TICK, KO). Tipos TS compartidos.", "model": "opencode-go/glm-5.1", "reason": "Enums y tipos. GLM Go simple.", "status": "todo", "dependencies": ["T-004"], "estimateHours": 0.5, "files": ["src/protocol/opcodes.ts", "shared/types.ts"], "comments": []},
+    {"id": "T-019", "phase": 4, "title": "Match handler: matchInit + matchJoinAttempt + matchJoin", "description": "Init: crea state (players vacíos, status waiting, tickRate 10). JoinAttempt: valida cupo 2 y modo. Join: agrega player con avatar.", "model": "opencode/claude-opus-4-7", "reason": "Base match autoritativa. Opus por criticidad server-side.", "status": "todo", "dependencies": ["T-018"], "estimateHours": 3, "files": ["src/matches/combat.ts"], "comments": []},
+    {"id": "T-020", "phase": 4, "title": "Match handler: matchLeave + matchTerminate + matchSignal", "description": "Leave: si status active → marca derrota y termina. Terminate: cleanup + hook postmatch. Signal: para comandos admin.", "model": "opencode/claude-opus-4-7", "reason": "Terminación con side effects (stats, rank). Opus.", "status": "todo", "dependencies": ["T-019"], "estimateHours": 2, "files": ["src/matches/combat.ts"], "comments": []},
+    {"id": "T-021", "phase": 4, "title": "Match handler: matchLoop con tick 10Hz", "description": "Loop principal: procesa opcodes recibidos, aplica reglas de combate (golpe, bloqueo, especial, charge), broadcast state delta a clientes.", "model": "opencode/claude-opus-4-7", "reason": "Tick loop 10Hz autoritativo. Corazón del juego, Opus.", "status": "todo", "dependencies": ["T-019", "T-018"], "estimateHours": 6, "files": ["src/matches/combat.ts", "src/matches/combat-rules.ts"], "comments": []},
+    {"id": "T-022", "phase": 4, "title": "Reglas de combate (funciones puras)", "description": "resolvePunch(state, side, attacker), resolveBlock(state, side, player), resolveSpecial(state, attacker). Puras y testeables.", "model": "opencode/gpt-5.6-sol", "reason": "Reglas puras de combate. GPT 5.6 Sol razona matemática con precisión.", "status": "todo", "dependencies": ["T-018"], "estimateHours": 4, "files": ["src/matches/combat-rules.ts"], "comments": []},
+    {"id": "T-023", "phase": 4, "title": "Tests unitarios de reglas de combate", "description": "Casos: golpe conecta, golpe bloqueado lado correcto, golpe bloqueado lado incorrecto, especial ignora bloqueo, charge se acumula, K.O. detectado.", "model": "opencode-go/deepseek-v4-flash", "reason": "Tests puros. Flash.", "status": "todo", "dependencies": ["T-022"], "estimateHours": 2, "files": ["tests/combat-rules.spec.ts"], "comments": []},
+    {"id": "T-024", "phase": 4, "title": "UI cliente: HUD combate (vida, charge, guantes)", "description": "Barras HP jugador/rival, medidor charge, guantes en esquinas inferiores que reaccionan a input.", "model": "opencode/grok-4.6", "reason": "UI juego con estado sincronizado. Grok fuerte en canvas + game UI.", "status": "todo", "dependencies": ["T-018"], "estimateHours": 4, "files": ["client/src/screens/Combat.tsx", "client/src/components/Hud.tsx"], "comments": []},
+    {"id": "T-025", "phase": 4, "title": "UI cliente: input handler + client-side prediction", "description": "Captura A/D/S/Espacio, mapea a opcodes, envía al servidor. Animación local instantánea, corrección si servidor difiere.", "model": "opencode/claude-opus-4-7", "reason": "Client prediction + reconciliación. Opus.", "status": "todo", "dependencies": ["T-024", "T-021"], "estimateHours": 4, "files": ["client/src/lib/input.ts", "client/src/lib/prediction.ts"], "comments": []},
+    {"id": "T-026", "phase": 5, "title": "RPC create_friendly_room + generación de código", "description": "Genera código 6-char (sin 0/O/1/I), verifica unicidad, crea match con mode friendly, guarda en Storage 'rooms' con TTL 15min.", "model": "opencode/kimi-k3", "reason": "Storage + generación con verificación. Kimi K3.", "status": "todo", "dependencies": ["T-019"], "estimateHours": 2, "files": ["src/rpcs/create_friendly_room.ts", "src/lib/room-code.ts"], "comments": []},
+    {"id": "T-027", "phase": 5, "title": "RPC join_friendly_room", "description": "Busca código en 'rooms', retorna matchId. Cliente hace matchJoin. Error si expirado o lleno.", "model": "opencode-go/glm-5.1", "reason": "Lookup simple.", "status": "todo", "dependencies": ["T-026"], "estimateHours": 1, "files": ["src/rpcs/join_friendly_room.ts"], "comments": []},
+    {"id": "T-028", "phase": 5, "title": "Cleanup job: expirar salas viejas", "description": "Función scheduled (cron dentro de Nakama runtime) que barre 'rooms' con TTL vencido cada 5min.", "model": "opencode-go/mimo-v2.5", "reason": "Cron acotado.", "status": "todo", "dependencies": ["T-026"], "estimateHours": 1, "files": ["src/jobs/expire-rooms.ts"], "comments": []},
+    {"id": "T-029", "phase": 5, "title": "UI: pantalla crear sala + copiar código", "description": "Botón crear, muestra código grande copiable, waiting state hasta que se une otro jugador.", "model": "opencode/gpt-5.4", "reason": "UI async con copy-to-clipboard. GPT 5.4.", "status": "todo", "dependencies": ["T-026"], "estimateHours": 2, "files": ["client/src/screens/CreateRoom.tsx"], "comments": []},
+    {"id": "T-030", "phase": 5, "title": "UI: pantalla unirse con código", "description": "Input 6-char (uppercase auto), botón unirse, error si no existe.", "model": "opencode-go/glm-5.1", "reason": "Form simple.", "status": "todo", "dependencies": ["T-027"], "estimateHours": 1, "files": ["client/src/screens/JoinRoom.tsx"], "comments": []},
+    {"id": "T-031", "phase": 6, "title": "Data: roster de 10 rivales (PvE)", "description": "Array con nombre, retrato URL, HP, daño, ventana telegraph, feint%, combo%, usa especial (bool). Nombres tontos del PRD.", "model": "opencode-go/minimax-m2.5", "reason": "Roster estático. MiniMax Go.", "status": "todo", "dependencies": [], "estimateHours": 1, "files": ["src/data/rivals.ts"], "comments": []},
+    {"id": "T-032", "phase": 6, "title": "Motor de patrones de rival IA (máquina de estados)", "description": "FSM idle→telegraph→strike→recover. Selector de acción probabilístico según parámetros del rival. Emite opcodes TELEGRAPH/STRIKE/FEINT.", "model": "opencode/gemini-3.1-pro", "reason": "FSM probabilística con timing. Gemini Pro razona bien state machines.", "status": "todo", "dependencies": ["T-021", "T-031"], "estimateHours": 5, "files": ["src/matches/rival-ai.ts"], "comments": []},
+    {"id": "T-033", "phase": 6, "title": "Variante career del match handler", "description": "Match handler modo career: 1 jugador + rival IA (T-032). Contador de knockdowns (2-3 antes de K.O. final).", "model": "opencode/claude-sonnet-4-6", "reason": "Extensión match handler. Sonnet.", "status": "todo", "dependencies": ["T-021", "T-032"], "estimateHours": 3, "files": ["src/matches/combat.ts"], "comments": []},
+    {"id": "T-034", "phase": 6, "title": "RPC start_career_match", "description": "Lee careerProgress del perfil, carga rival correspondiente, crea match career.", "model": "opencode-go/glm-5.1", "reason": "Orquestación simple.", "status": "todo", "dependencies": ["T-033"], "estimateHours": 1, "files": ["src/rpcs/start_career_match.ts"], "comments": []},
+    {"id": "T-035", "phase": 6, "title": "Hook postmatch career: incrementar progreso", "description": "Al vencer: careerProgress++, marca rival como derrotado, otorga XP. Al perder: no toca progreso.", "model": "opencode/kimi-k3", "reason": "Efectos storage con reglas. Kimi K3.", "status": "todo", "dependencies": ["T-033"], "estimateHours": 1, "files": ["src/hooks/postmatch-career.ts"], "comments": []},
+    {"id": "T-036", "phase": 6, "title": "UI: pantalla escalera de rivales", "description": "Grid de 10 retratos, bloqueados con candado salvo el actual y los ya vencidos. Botón 'pelear' en el actual.", "model": "opencode/grok-4.6", "reason": "UI condicional con grid rivales. Grok.", "status": "todo", "dependencies": ["T-034"], "estimateHours": 3, "files": ["client/src/screens/CareerLadder.tsx"], "comments": []},
+    {"id": "T-037", "phase": 7, "title": "Fórmulas XP y nivel", "description": "Funciones puras: awardXp(match), xpNeededForLevel(n)=100*n^1.5, levelFromXp(xp).", "model": "opencode-go/deepseek-v4-flash", "reason": "Fórmulas puras. Flash.", "status": "todo", "dependencies": ["T-007"], "estimateHours": 1, "files": ["src/lib/xp.ts"], "comments": []},
+    {"id": "T-038", "phase": 7, "title": "Tabla de unlocks por nivel", "description": "Data: por cada nivel, qué se desbloquea (skin de guantes, estilo avatar, frase cómica).", "model": "opencode-go/minimax-m2.5", "reason": "Tabla estática.", "status": "todo", "dependencies": [], "estimateHours": 1, "files": ["src/data/unlocks.ts"], "comments": []},
+    {"id": "T-039", "phase": 7, "title": "Data: pool de frases cómicas", "description": "Array de frases con nivel de unlock. Base: POW, BONK, ZAS, CATAPLUM.", "model": "opencode-go/glm-5.1", "reason": "Data pool estático.", "status": "todo", "dependencies": [], "estimateHours": 0.5, "files": ["src/data/comic-phrases.ts"], "comments": []},
+    {"id": "T-040", "phase": 7, "title": "Hook postmatch: aplicar XP + unlocks", "description": "Calcula XP con T-037, actualiza perfil, si sube nivel aplica unlock de T-038, notifica al cliente.", "model": "opencode/kimi-k3", "reason": "Coordinación multi-hook. Kimi K3.", "status": "todo", "dependencies": ["T-037", "T-038", "T-020"], "estimateHours": 2, "files": ["src/hooks/postmatch-xp.ts"], "comments": []},
+    {"id": "T-041", "phase": 7, "title": "Sistema de logros (definición + verificador)", "description": "Definición de 4 logros iniciales (first_blood, cara_de_piedra, remontada, campeon). Verificador idempotente contra 'achievements' storage.", "model": "opencode/qwen3.7-max", "reason": "Lógica condiciones + idempotencia. Qwen Max fuerte en logic puzzles.", "status": "todo", "dependencies": ["T-020"], "estimateHours": 2, "files": ["src/lib/achievements.ts", "src/data/achievements.ts"], "comments": []},
+    {"id": "T-042", "phase": 7, "title": "Setup leaderboards (most_kos, current_streak)", "description": "Registrar 2 leaderboards en InitModule via nk.leaderboardCreate. Update en postmatch hook.", "model": "opencode/claude-sonnet-4-6", "reason": "Setup leaderboards Nakama API. Sonnet.", "status": "todo", "dependencies": ["T-020"], "estimateHours": 2, "files": ["src/leaderboards/setup.ts", "src/hooks/postmatch-leaderboard.ts"], "comments": []},
+    {"id": "T-043", "phase": 7, "title": "UI: pantalla de perfil (nivel, xp, stats, logros)", "description": "Muestra avatar, nombre, nivel/xp bar, wins/losses/kos, grid de logros desbloqueados/bloqueados.", "model": "opencode/gemini-3.1-pro", "reason": "UI perfil compuesta. Gemini Pro.", "status": "todo", "dependencies": ["T-008", "T-041"], "estimateHours": 3, "files": ["client/src/screens/Profile.tsx"], "comments": []},
+    {"id": "T-044", "phase": 7, "title": "UI: pantalla leaderboards", "description": "Tabs 'Más K.O.s' y 'Racha actual', lista paginada, resalta usuario actual.", "model": "opencode/grok-4.6", "reason": "UI leaderboards con tabs y paginación. Grok.", "status": "todo", "dependencies": ["T-042"], "estimateHours": 2, "files": ["client/src/screens/Leaderboards.tsx"], "comments": []},
+    {"id": "T-045", "phase": 8, "title": "Cálculo de Elo server-side", "description": "computeElo(rankA, rankB, resultA, cleanKo): retorna nuevos rankScores para ambos. K=24, bonus +5 K.O. limpio.", "model": "opencode/claude-opus-4-7", "reason": "Elo math crítica. Opus zero-tolerance.", "status": "todo", "dependencies": [], "estimateHours": 2, "files": ["src/lib/elo.ts"], "comments": []},
+    {"id": "T-046", "phase": 8, "title": "Tests de Elo (simetría, K.O. bonus, extremos)", "description": "Verificar: A gana +X ≈ B pierde X, K.O. limpio suma bonus, ranks extremos no explotan.", "model": "opencode-go/deepseek-v4-flash", "reason": "Tests Elo simetría. Flash.", "status": "todo", "dependencies": ["T-045"], "estimateHours": 1, "files": ["tests/elo.spec.ts"], "comments": []},
+    {"id": "T-047", "phase": 8, "title": "Matchmaker query + widening progresivo", "description": "Cliente llama matchmakerAdd con rankScore, retry a 10s (±250), 20s (±400). Server valida en accept callback.", "model": "opencode/gpt-5.6-sol", "reason": "Matchmaker widening UX-sensible. GPT 5.6 Sol razona timing.", "status": "todo", "dependencies": ["T-019"], "estimateHours": 3, "files": ["src/matchmaker/config.ts", "client/src/lib/matchmaker.ts"], "comments": []},
+    {"id": "T-048", "phase": 8, "title": "Bot fallback tras 30s sin match", "description": "Ofrece pelear vs bot (reutiliza motor career T-032, escogiendo rival de dificultad cercana al rank).", "model": "opencode/claude-sonnet-4-6", "reason": "Bot fallback con selección de dificultad. Sonnet.", "status": "todo", "dependencies": ["T-047", "T-032"], "estimateHours": 2, "files": ["src/matchmaker/bot-fallback.ts"], "comments": []},
+    {"id": "T-049", "phase": 8, "title": "Hook postmatch ranked: actualizar Elo", "description": "En modo ranked, al terminar match, llama T-045 con datos server-side, actualiza rankScore en ambos perfiles.", "model": "opencode/claude-opus-4-7", "reason": "Escritura crítica de rango. Opus.", "status": "todo", "dependencies": ["T-045", "T-020"], "estimateHours": 2, "files": ["src/hooks/postmatch-ranked.ts"], "comments": []},
+    {"id": "T-050", "phase": 8, "title": "Función tierFromScore + badge", "description": "Bronce/Plata/Oro/Leyenda Tonta desde rankScore. UI badge con color por tier.", "model": "opencode-go/glm-5.1", "reason": "Función simple + badge.", "status": "todo", "dependencies": [], "estimateHours": 1, "files": ["src/lib/tier.ts", "client/src/components/TierBadge.tsx"], "comments": []},
+    {"id": "T-051", "phase": 8, "title": "UI: pantalla buscar partida ranked", "description": "Botón buscar, indicador animado de rango ampliándose (±150→±250→±400), opción de bot tras 30s.", "model": "opencode/gemini-3.1-pro", "reason": "UI con timers y widening visual. Gemini Pro.", "status": "todo", "dependencies": ["T-047"], "estimateHours": 3, "files": ["client/src/screens/RankedSearch.tsx"], "comments": []},
+    {"id": "T-052", "phase": 9, "title": "Sistema de screen shake y camera FX", "description": "shake(intensity, duration), zoom en especial, freeze frame en K.O. Toggle 'reduce motion' respetado.", "model": "opencode/gpt-5.4", "reason": "FX cámara con timing y accesibilidad. GPT 5.4.", "status": "todo", "dependencies": ["T-024"], "estimateHours": 3, "files": ["client/src/fx/camera.ts"], "comments": []},
+    {"id": "T-053", "phase": 9, "title": "Integración de SFX + música", "description": "Cargar y disparar SFX por evento (pow, whoosh, block, special, ko). Music loops lobby/combate.", "model": "opencode/kimi-k3", "reason": "Audio con estados. Kimi K3.", "status": "todo", "dependencies": ["T-024"], "estimateHours": 3, "files": ["client/src/audio/manager.ts", "client/src/audio/sfx-map.ts"], "comments": []},
+    {"id": "T-054", "phase": 9, "title": "Animaciones de guantes y reacciones", "description": "Sprites/tweens: guantes al golpear, hurt reaction, KO caída, golpe fallido cómico.", "model": "opencode/grok-4.6", "reason": "Animaciones con timing. Grok.", "status": "todo", "dependencies": ["T-025"], "estimateHours": 4, "files": ["client/src/fx/animations.ts"], "comments": []},
+    {"id": "T-055", "phase": 9, "title": "Overlay de texto cómic POW/BONK/ZAS", "description": "Componente que aparece 300ms al conectar golpe, texto random del pool T-039 desbloqueado.", "model": "opencode-go/mimo-v2.5", "reason": "Componente visual chico.", "status": "todo", "dependencies": ["T-039", "T-024"], "estimateHours": 1, "files": ["client/src/fx/ComicText.tsx"], "comments": []},
+    {"id": "T-056", "phase": 9, "title": "Sesión de playtesting + ajustes de balance", "description": "Playtest con 3-5 jugadores. Ajustar ventanas telegraph rival por rival, carga especial, HP champ. Documentar cambios.", "model": "opencode/claude-opus-4-7", "reason": "Balance con juicio de diseño. Opus.", "status": "todo", "dependencies": ["T-036", "T-051", "T-052", "T-053", "T-054"], "estimateHours": 4, "files": ["src/data/rivals.ts", "docs/balance-notes.md"], "comments": []}
+  ]
+};
+
+// Parse full opencode IDs: "opencode/claude-opus-4-7" or "opencode-go/glm-5.1"
+function parseModel(id) {
+  const [runtime, ...rest] = id.split('/');
+  const name = rest.join('/');
+  const lower = name.toLowerCase();
+  let provider = 'other', label = name.toUpperCase();
+  const prov = [
+    ['claude-', 'anthropic'], ['gpt', 'openai'], ['gemini', 'google'],
+    ['grok', 'xai'], ['qwen', 'qwen'], ['kimi', 'kimi'],
+    ['deepseek', 'deepseek'], ['glm', 'glm'], ['minimax', 'minimax'],
+    ['mimo', 'mimo'], ['muse', 'muse']
+  ];
+  for (const [pref, p] of prov) if (lower.startsWith(pref)) { provider = p; break; }
+  if (provider === 'anthropic') {
+    const m = name.match(/^claude-(opus|sonnet|haiku|fable)-?(.*)$/i);
+    if (m) label = m[1].toUpperCase() + (m[2] ? ' ' + m[2].replace(/-/g, '.') : '');
+  } else if (provider !== 'other') {
+    const prefixMap = { openai: 'gpt', google: 'gemini', xai: 'grok', qwen: 'qwen', kimi: 'kimi', deepseek: 'deepseek', glm: 'glm', minimax: 'minimax', mimo: 'mimo', muse: 'muse' };
+    const pre = prefixMap[provider];
+    const clean = name.replace(new RegExp('^' + pre + '-?v?', 'i'), '').replace(/-/g, ' ');
+    label = provider.toUpperCase() + ' ' + clean.toUpperCase();
+  }
+  return {
+    runtime,
+    runtimeLabel: runtime === 'opencode-go' ? 'GO' : 'ZEN',
+    provider,
+    name,
+    label: label.replace(/\s+/g, ' ').trim()
+  };
+}
+const STATUS_ORDER = ['backlog', 'todo', 'in-progress', 'done', 'blocked'];
+
+// ---------- STATE ----------
+const STORAGE_KEY = 'punch-avatar-task-state-v3';
+let state = loadState();
+let currentView = 'order';
+let currentFilters = { phase: 'all', provider: 'all', runtime: 'all', search: '' };
+const TASK_MAP = new Map(DATA.tasks.map(t => [t.id, t]));
+
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    return { statuses: saved.statuses || {}, comments: saved.comments || {} };
+  } catch { return { statuses: {}, comments: {} }; }
+}
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function getStatus(id) { return state.statuses[id] || TASK_MAP.get(id).status; }
+function setStatus(id, status) { state.statuses[id] = status; saveState(); render(); }
+function getComments(id) {
+  const seed = TASK_MAP.get(id).comments || [];
+  const runtime = state.comments[id] || [];
+  return [...seed, ...runtime];
+}
+function addComment(id, author, text) {
+  if (!state.comments[id]) state.comments[id] = [];
+  state.comments[id].push({ author, text, ts: new Date().toISOString() });
+  saveState();
+}
+function deleteRuntimeComment(id, idx) {
+  const seedLen = (TASK_MAP.get(id).comments || []).length;
+  const runtimeIdx = idx - seedLen;
+  if (runtimeIdx < 0) return;
+  state.comments[id].splice(runtimeIdx, 1);
+  saveState();
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function depsCounts(task) {
+  const total = task.dependencies.length;
+  const done = task.dependencies.filter(d => getStatus(d) === 'done').length;
+  return { total, done, allDone: total === 0 || done === total };
+}
+
+function isReadyToFight(task) {
+  const status = getStatus(task.id);
+  if (status !== 'todo' && status !== 'backlog') return false;
+  return depsCounts(task).allDone;
+}
+
+// ---------- FILTERS ----------
+function filteredTasks() {
+  const s = currentFilters.search.toLowerCase();
+  return DATA.tasks.filter(t => {
+    if (currentFilters.phase !== 'all' && t.phase !== parseInt(currentFilters.phase)) return false;
+    const m = parseModel(t.model);
+    if (currentFilters.provider !== 'all' && m.provider !== currentFilters.provider) return false;
+    if (currentFilters.runtime !== 'all' && m.runtime !== currentFilters.runtime) return false;
+    if (s) {
+      const hay = (t.id + t.title + t.description + (t.files || []).join(' ')).toLowerCase();
+      if (!hay.includes(s)) return false;
+    }
+    return true;
+  });
+}
+
+// ---------- STATS ----------
+function renderStats() {
+  const tasks = filteredTasks();
+  const byStatus = {};
+  const byProvider = {};
+  const byRuntime = { 'opencode': 0, 'opencode-go': 0 };
+  let totalHours = 0;
+  tasks.forEach(t => {
+    const st = getStatus(t.id);
+    byStatus[st] = (byStatus[st] || 0) + 1;
+    const m = parseModel(t.model);
+    byProvider[m.provider] = (byProvider[m.provider] || 0) + 1;
+    byRuntime[m.runtime] = (byRuntime[m.runtime] || 0) + 1;
+    totalHours += t.estimateHours;
+  });
+  const done = byStatus['done'] || 0;
+  const pct = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
+
+  // Hero scorecard: top 3 numbers
+  document.getElementById('hero-scorecard').innerHTML = `
+    <div class="hero-stat">
+      <div class="label">Total Bouts</div>
+      <div class="value">${tasks.length}</div>
+    </div>
+    <div class="hero-stat hero-progress">
+      <div class="label">Progress</div>
+      <div class="value">${pct}%</div>
+      <div class="hero-progress-bar"><div class="fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="hero-stat">
+      <div class="label">Est. Hours</div>
+      <div class="value">${totalHours}h</div>
+    </div>
+  `;
+
+  const statusCells = [
+    { cls: 'status-done', label: 'Done', value: byStatus['done'] || 0 },
+    { cls: 'status-active', label: 'Active', value: byStatus['in-progress'] || 0 },
+    { cls: 'status-todo', label: 'Todo', value: byStatus['todo'] || 0 },
+    { cls: 'status-blocked', label: 'Blocked', value: byStatus['blocked'] || 0 }
+  ];
+  const runtimeCells = [
+    { cls: 'runtime-zen', label: 'Zen · pay-as-you-go', value: byRuntime['opencode'] || 0 },
+    { cls: 'runtime-go', label: 'Go · subscription', value: byRuntime['opencode-go'] || 0 }
+  ];
+  const providerCells = Object.entries(byProvider)
+    .sort((a,b) => b[1] - a[1])
+    .map(([prov, cnt]) => ({ cls: `provider-${prov}`, label: prov, value: cnt }));
+
+  const cellHtml = c => `
+    <div class="stat-cell ${c.cls}">
+      <div class="value">${c.value}</div>
+      <div class="label">${c.label}</div>
+    </div>`;
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-group">
+      <div class="stat-group-label">Status</div>
+      <div class="stat-group-cells">${statusCells.map(cellHtml).join('')}</div>
+    </div>
+    <div class="stat-group">
+      <div class="stat-group-label">Runtime</div>
+      <div class="stat-group-cells cols-2">${runtimeCells.map(cellHtml).join('')}</div>
+    </div>
+    <div class="stat-group full">
+      <div class="stat-group-label">Providers · ${providerCells.length} in the corner</div>
+      <div class="stat-group-cells">${providerCells.map(cellHtml).join('')}</div>
+    </div>
+  `;
+}
+
+// ---------- CARD ----------
+function cardHtml(t) {
+  const status = getStatus(t.id);
+  const counts = depsCounts(t);
+  const ready = isReadyToFight(t);
+  const readyClass = ready ? ' ready-to-fight' : '';
+  const statusClass = ` status-${status}`;
+  const commentCount = getComments(t.id).length;
+  const commentBadge = commentCount ? `<span class="badge badge-comments">💬 ${commentCount}</span>` : '';
+
+  const depsStrip = t.dependencies.length ? `
+    <div class="deps-strip">
+      <span class="deps-label">DEPS</span>
+      ${t.dependencies.map(d => {
+        const dep = TASK_MAP.get(d);
+        const depStatus = dep ? getStatus(d) : 'backlog';
+        return `<span class="dep-chip dep-${depStatus}" title="${dep ? escapeHtml(dep.title) : d}">${d}</span>`;
+      }).join('')}
+      <span class="deps-summary ${counts.allDone ? 'all-done' : ''}">${counts.done}/${counts.total}</span>
+    </div>` : '';
+
+  const m = parseModel(t.model);
+  return `
+    <div class="card provider-${m.provider} runtime-${m.runtime}${readyClass}${statusClass}" data-id="${t.id}">
+      <div class="card-topline">
+        <span class="card-id">${t.id}</span>
+        <span class="card-hours">${t.estimateHours}h</span>
+      </div>
+      <div class="card-title">${escapeHtml(t.title)}</div>
+      <div class="card-badges">
+        <span class="badge badge-provider-${m.provider}">${escapeHtml(m.label)}</span>
+        <span class="badge badge-runtime-${m.runtime}">${m.runtimeLabel}</span>
+        <span class="badge badge-phase">R${t.phase}</span>
+        <span class="badge badge-status-${status}">${status}</span>
+        ${commentBadge}
+      </div>
+      ${depsStrip}
+    </div>
+  `;
+}
+
+// ---------- ORDER VIEW ----------
+function renderOrderView() {
+  const tasks = filteredTasks();
+  if (!tasks.length) return emptyState();
+  const byPhase = {};
+  tasks.forEach(t => {
+    (byPhase[t.phase] = byPhase[t.phase] || []).push(t);
+  });
+
+  const html = DATA.phases.map(phase => {
+    const phaseTasks = byPhase[phase.id];
+    if (!phaseTasks || phaseTasks.length === 0) return '';
+    const sorted = topologicalOrder(phaseTasks);
+    return `
+      <div class="round">
+        <div class="round-number">Round ${phase.id}</div>
+        <div class="round-header">
+          <h2>${escapeHtml(phase.name)}</h2>
+          <span class="spec-ref">docs/specs/${phase.spec}.md · ${phaseTasks.length} bouts</span>
+        </div>
+        <div class="fight-list">
+          ${sorted.map(cardHtml).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('content').innerHTML = `<div class="rounds">${html}</div>`;
+  attachCardHandlers();
+}
+
+function topologicalOrder(tasks) {
+  const ids = new Set(tasks.map(t => t.id));
+  const map = new Map(tasks.map(t => [t.id, t]));
+  const visited = new Set();
+  const result = [];
+  function visit(t) {
+    if (visited.has(t.id)) return;
+    visited.add(t.id);
+    t.dependencies.forEach(d => { if (ids.has(d)) visit(map.get(d)); });
+    result.push(t);
+  }
+  tasks.forEach(visit);
+  return result;
+}
+
+// ---------- KANBAN ----------
+function renderKanbanView() {
+  const tasks = filteredTasks();
+  if (!tasks.length) return emptyState();
+  const grouped = {};
+  STATUS_ORDER.forEach(c => grouped[c] = []);
+  tasks.forEach(t => {
+    const st = getStatus(t.id);
+    if (grouped[st]) grouped[st].push(t);
+  });
+
+  const html = `<div class="kanban">${STATUS_ORDER.map(col => `
+    <div class="kanban-col ${col}">
+      <h3>${col.replace('-', ' ')} <span class="count">${grouped[col].length}</span></h3>
+      <div class="cards">
+        ${grouped[col].map(cardHtml).join('')}
+      </div>
+    </div>
+  `).join('')}</div>`;
+
+  document.getElementById('content').innerHTML = html;
+  attachCardHandlers();
+}
+
+function emptyState() {
+  document.getElementById('content').innerHTML = `
+    <div class="empty-state">
+      <span class="big">NO CONTENDERS</span>
+      Adjust filters to bring back the fights.
+    </div>`;
+}
+
+// ---------- CARD CLICK ----------
+function attachCardHandlers() {
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', () => openModal(card.dataset.id));
+  });
+}
+
+// ---------- MODAL ----------
+function openModal(id) {
+  const t = TASK_MAP.get(id);
+  const status = getStatus(id);
+  const phase = DATA.phases.find(p => p.id === t.phase);
+  const counts = depsCounts(t);
+
+  const depsList = t.dependencies.length
+    ? t.dependencies.map(d => {
+        const dep = TASK_MAP.get(d);
+        const depStatus = dep ? getStatus(d) : 'backlog';
+        const title = dep ? escapeHtml(dep.title) : '(missing)';
+        return `
+          <li class="dep-status-${depStatus}">
+            <span class="dep-id">${d}</span>
+            <span>${title}</span>
+            <span class="dep-status-badge st-${depStatus}">${depStatus}</span>
+          </li>`;
+      }).join('')
+    : '<li style="opacity:0.6"><span>Ninguna — puede empezar cuando quieras</span></li>';
+
+  const filesList = t.files.length
+    ? t.files.map(f => `<li>${escapeHtml(f)}</li>`).join('')
+    : '<li style="opacity:0.6">Sin archivos definidos</li>';
+
+  const readyLine = t.dependencies.length ? `
+    <div class="field field-full">
+      <div class="field-label">Dependencies · ${counts.done}/${counts.total} done ${counts.allDone ? '✓ CLEARED' : '⏳ WAITING'}</div>
+      <ul class="deps-list">${depsList}</ul>
+    </div>` : `
+    <div class="field field-full">
+      <div class="field-label">Dependencies</div>
+      <ul class="deps-list">${depsList}</ul>
+    </div>`;
+
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-topband">ROUND ${t.phase} · ${escapeHtml(phase.name).toUpperCase()}</div>
+    <h2>${escapeHtml(t.title)}</h2>
+    <div class="task-id">${t.id} · Estimated ${t.estimateHours}h · ${isReadyToFight(t) ? '★ READY TO FIGHT ★' : status.toUpperCase()}</div>
+    <div class="desc">${escapeHtml(t.description)}</div>
+    <div class="grid">
+      <div class="field">
+        <div class="field-label">Model · ${parseModel(t.model).runtimeLabel}</div>
+        <div class="field-value">
+          <span class="badge badge-provider-${parseModel(t.model).provider}">${escapeHtml(parseModel(t.model).label)}</span>
+          <span class="badge badge-runtime-${parseModel(t.model).runtime}">${parseModel(t.model).runtimeLabel}</span>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;margin-top:6px;opacity:0.65;letter-spacing:1px">${escapeHtml(t.model)}</div>
+      </div>
+      <div class="field">
+        <div class="field-label">Estimate</div>
+        <div class="field-value">${t.estimateHours}h</div>
+      </div>
+      <div class="field field-full">
+        <div class="field-label">Why this corner</div>
+        <div class="field-value">${escapeHtml(t.reason)}</div>
+      </div>
+      ${readyLine}
+      <div class="field field-full files">
+        <div class="field-label">Files</div>
+        <ul>${filesList}</ul>
+      </div>
+      <div class="field field-full">
+        <div class="field-label">Change status</div>
+        <div class="status-picker">
+          ${STATUS_ORDER.map(s => `<button data-status="${s}" class="${s === status ? 'active' : ''}">${s}</button>`).join('')}
+        </div>
+      </div>
+      <div class="field field-full">
+        <div class="field-label">Corner Talk · ${getComments(id).length} comment${getComments(id).length===1?'':'s'}</div>
+        <div class="comments-block" id="comments-block">
+          ${renderCommentsHtml(id)}
+        </div>
+        <div class="comment-form" style="margin-top:10px">
+          <div class="comment-form-row">
+            <label style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:var(--blood)">AS</label>
+            <select id="comment-author">
+              <option value="${t.model}" selected>${escapeHtml(parseModel(t.model).label)} · ${parseModel(t.model).runtimeLabel} (assigned)</option>
+              ${[...new Set(DATA.tasks.map(x => x.model))].filter(x => x !== t.model).sort().map(mid => {
+                const mm = parseModel(mid);
+                return `<option value="${mid}">${escapeHtml(mm.label)} · ${mm.runtimeLabel}</option>`;
+              }).join('')}
+              <option value="human">Human</option>
+            </select>
+          </div>
+          <textarea id="comment-text" placeholder="Short update — what got done, blockers, next step..."></textarea>
+          <button id="comment-add">Post to corner</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('.status-picker button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setStatus(id, btn.dataset.status);
+      openModal(id);
+    });
+  });
+
+  document.getElementById('comment-add').addEventListener('click', () => {
+    const author = document.getElementById('comment-author').value;
+    const text = document.getElementById('comment-text').value.trim();
+    if (!text) return;
+    addComment(id, author, text);
+    render();
+    openModal(id);
+  });
+
+  document.querySelectorAll('.comment-del').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.idx);
+      deleteRuntimeComment(id, idx);
+      render();
+      openModal(id);
+    });
+  });
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function renderCommentsHtml(id) {
+  const list = getComments(id);
+  if (!list.length) return '<div style="opacity:0.5;font-family:\'Archivo Narrow\',sans-serif;font-size:13px;padding:8px 4px">No corner talk yet. First one gets the mic.</div>';
+  const seedLen = (TASK_MAP.get(id).comments || []).length;
+  return list.map((c, i) => {
+    const isSeed = i < seedLen;
+    const ts = new Date(c.ts).toLocaleString('es', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+    let authorLabel, providerCls;
+    if (c.author === 'human') { authorLabel = 'HUMAN'; providerCls = 'human'; }
+    else if (c.author.includes('/')) { const m = parseModel(c.author); authorLabel = m.label; providerCls = m.provider; }
+    else { authorLabel = c.author.toUpperCase(); providerCls = 'other'; }
+    return `
+      <div class="comment ${isSeed ? 'comment-seed' : ''}">
+        <div class="comment-head">
+          <span class="comment-author author-${providerCls}">${escapeHtml(authorLabel)}</span>
+          <span class="comment-ts">${ts}${isSeed ? ' · seed' : ''}</span>
+        </div>
+        <div class="comment-body">${escapeHtml(c.text)}</div>
+        ${isSeed ? '' : `<button class="comment-del" data-idx="${i}" title="delete">✕</button>`}
+      </div>
+    `;
+  }).join('');
+}
+
+document.getElementById('close-modal').addEventListener('click', () => {
+  document.getElementById('modal-overlay').classList.remove('open');
+});
+document.getElementById('modal-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'modal-overlay') document.getElementById('modal-overlay').classList.remove('open');
+});
+
+// ---------- LEGEND ----------
+const PROVIDER_DESC = {
+  anthropic: 'Server authority, matemática crítica, decisiones costosas. La esquina roja del proyecto.',
+  openai: 'Integraciones estándar, UI React, HTTP + polling. Peso medio confiable.',
+  google: 'State machines, canvas + UX, layouts con timers. Gemini razona bien flow.',
+  xai: 'Game UI, animaciones, canvas de combate. Grok con feel de juego.',
+  qwen: 'Scaffolding masivo, lógica con idempotencia. Coder-focused.',
+  kimi: 'APIs externas, storage con reglas, integraciones con SDK. Kimi K3 solid.',
+  deepseek: 'Funciones puras: validadores, tests, fórmulas matemáticas. Cost-optimized.',
+  glm: 'Config, forms simples, lookups. Barato y consistente en Go plan.',
+  minimax: 'Data estática curada, roster, tablas. MiniMax Go alcanza.',
+  mimo: 'YAML, cron, componentes visuales chicos. MiMo Go.',
+  muse: 'Experimental / creativo.',
+  other: 'Fuera de catálogo conocido.'
+};
+
+function renderLegend() {
+  const used = new Set(DATA.tasks.map(t => parseModel(t.model).provider));
+  const items = [...used].sort().map(prov => {
+    const models = [...new Set(DATA.tasks.filter(t => parseModel(t.model).provider === prov).map(t => parseModel(t.model).label))];
+    const cnt = DATA.tasks.filter(t => parseModel(t.model).provider === prov).length;
+    return `
+      <div class="legend-item">
+        <span class="legend-swatch ${prov}"></span>
+        <div>
+          <strong>${prov.toUpperCase()} <span style="opacity:0.6;font-family:'JetBrains Mono',monospace;font-size:11px">· ${cnt} bouts</span></strong>
+          <p>${PROVIDER_DESC[prov] || ''}</p>
+          <p style="font-family:'JetBrains Mono',monospace;font-size:11px;margin-top:4px;color:var(--blood)">${models.join(' · ')}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('legend-grid').innerHTML = items;
+}
+
+// ---------- MAIN ----------
+function render() {
+  renderStats();
+  renderLegend();
+  if (currentView === 'order') renderOrderView();
+  else renderKanbanView();
+}
+
+function initControls() {
+  const phaseSelect = document.getElementById('filter-phase');
+  DATA.phases.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = `R${p.id}. ${p.name}`;
+    phaseSelect.appendChild(opt);
+  });
+
+  phaseSelect.addEventListener('change', e => { currentFilters.phase = e.target.value; render(); });
+
+  // Populate provider filter dynamically
+  const providerSelect = document.getElementById('filter-provider');
+  const providers = [...new Set(DATA.tasks.map(t => parseModel(t.model).provider))].sort();
+  providers.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p;
+    opt.textContent = p;
+    providerSelect.appendChild(opt);
+  });
+  providerSelect.addEventListener('change', e => { currentFilters.provider = e.target.value; render(); });
+  document.getElementById('filter-runtime').addEventListener('change', e => { currentFilters.runtime = e.target.value; render(); });
+  document.getElementById('search').addEventListener('input', e => { currentFilters.search = e.target.value; render(); });
+
+  document.querySelectorAll('.view-switch button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.view-switch button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentView = btn.dataset.view;
+      render();
+    });
+  });
+
+  document.getElementById('reset-progress').addEventListener('click', () => {
+    if (confirm('Reset all fight statuses to defaults?')) {
+      state = { statuses: {}, comments: {} };
+      saveState();
+      render();
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.getElementById('modal-overlay').classList.remove('open');
+  });
+}
+
+initControls();
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,1058 @@
+{
+  "meta": {
+    "project": "Punch Avatar",
+    "version": "1.0.0",
+    "generatedAt": "2026-08-18",
+    "modelStrategy": {
+      "format": "Full OpenCode model ID: 'opencode/<name>' (Zen, pay-as-you-go) or 'opencode-go/<name>' (Go plan, subscription).",
+      "tiers": {
+        "premium": "Server authority, matemática crítica, decisiones costosas → Opus, GPT 5.6 Sol, Gemini Pro, DeepSeek V4 Pro",
+        "standard": "Integraciones, UI compleja, RPCs → Sonnet, GPT 5.4/5.5, Grok 4.6, Kimi K3, Qwen Max",
+        "cheap": "Config, static data, forms simples, tests puros → GLM Go, MiniMax Go, MiMo Go, DeepSeek Flash Go"
+      },
+      "providers": {
+        "anthropic": "claude-opus-*, claude-sonnet-*, claude-haiku-*",
+        "openai": "gpt-5.x, gpt-5.x-codex",
+        "google": "gemini-3.x-*",
+        "xai": "grok-4.x",
+        "qwen": "qwen3.x-max/plus",
+        "kimi": "kimi-k*",
+        "deepseek": "deepseek-v4-pro/flash",
+        "glm": "glm-5.x",
+        "minimax": "minimax-m2.x/m3",
+        "mimo": "mimo-v2.5"
+      },
+      "source": "docs/OPENCODE.md"
+    },
+    "statuses": [
+      "backlog",
+      "todo",
+      "in-progress",
+      "done",
+      "blocked"
+    ],
+    "taskFields": {
+      "comments": "array of {author, text, ts} — appended by agent when task done. author = model id or \"human\""
+    }
+  },
+  "phases": [
+    {
+      "id": 1,
+      "name": "Fundación Nakama",
+      "spec": "00-arquitectura-nakama"
+    },
+    {
+      "id": 2,
+      "name": "Auth y Perfil",
+      "spec": "01-auth-perfil"
+    },
+    {
+      "id": 3,
+      "name": "Avatar IA",
+      "spec": "02-avatar-ia"
+    },
+    {
+      "id": 4,
+      "name": "Combate Core",
+      "spec": "03-combate-core"
+    },
+    {
+      "id": 5,
+      "name": "Versus Amistoso",
+      "spec": "04-versus-amistoso"
+    },
+    {
+      "id": 6,
+      "name": "Carrera PvE",
+      "spec": "05-carrera-pve"
+    },
+    {
+      "id": 7,
+      "name": "Gamificación",
+      "spec": "06-gamificacion"
+    },
+    {
+      "id": 8,
+      "name": "Versus Ranked",
+      "spec": "07-versus-ranked"
+    },
+    {
+      "id": 9,
+      "name": "Pulido",
+      "spec": "08-pulido"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T-001",
+      "phase": 1,
+      "title": "docker-compose.yml con Nakama + Postgres",
+      "description": "Servicios nakama:3.x y postgres:15, red interna, volumen persistente, healthchecks. Puertos 7350 (client), 7351 (console), 7349 (grpc).",
+      "model": "opencode-go/glm-5.1",
+      "reason": "Config docker-compose estático. GLM Go barato y consistente para YAML.",
+      "status": "todo",
+      "dependencies": [],
+      "estimateHours": 1,
+      "files": [
+        "docker-compose.yml"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-002",
+      "phase": 1,
+      "title": "nakama.yml con runtime.js_entrypoint",
+      "description": "Configura runtime TS apuntando a build/index.js, log level, session token TTL.",
+      "model": "opencode-go/mimo-v2.5",
+      "reason": "YAML corto de config. MiMo Go maneja bien archivos puntuales.",
+      "status": "todo",
+      "dependencies": [
+        "T-001"
+      ],
+      "estimateHours": 0.5,
+      "files": [
+        "nakama.yml"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-003",
+      "phase": 1,
+      "title": "Setup proyecto TypeScript (tsconfig, package.json, build)",
+      "description": "tsconfig target es2020 (Goja compat), esbuild bundling a build/index.js. Scripts npm build/dev.",
+      "model": "opencode-go/qwen3.8-max",
+      "reason": "Scaffolding TS project. Qwen Max Go excelente con estructura repetitiva.",
+      "status": "todo",
+      "dependencies": [],
+      "estimateHours": 1,
+      "files": [
+        "tsconfig.json",
+        "package.json",
+        "esbuild.config.mjs"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-004",
+      "phase": 1,
+      "title": "InitModule con RPC ping y match handler dummy",
+      "description": "Punto de entrada TS. Registra RPC 'ping' que devuelve pong, y match handler 'combat' vacío con las 7 funciones estándar.",
+      "model": "opencode/gpt-5.4",
+      "reason": "InitModule + registro RPCs Nakama. GPT 5.4 sólido en integraciones estándar.",
+      "status": "todo",
+      "dependencies": [
+        "T-003"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "src/main.ts",
+        "src/rpcs/ping.ts",
+        "src/matches/combat.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-005",
+      "phase": 1,
+      "title": "Verificar boot end-to-end y healthcheck",
+      "description": "docker compose up, curl :7350/healthcheck, llamar RPC ping desde consola, verificar log de InitModule.",
+      "model": "opencode-go/glm-5.1",
+      "reason": "Verificación curl + logs. Barato, cheap task.",
+      "status": "todo",
+      "dependencies": [
+        "T-001",
+        "T-002",
+        "T-004"
+      ],
+      "estimateHours": 0.5,
+      "files": [],
+      "comments": []
+    },
+    {
+      "id": "T-006",
+      "phase": 2,
+      "title": "Validador de username (regex + longitud)",
+      "description": "Función pura: alfanumérico, 3-20 chars, no reservadas (admin, root, null). Retorna {valid, reason}.",
+      "model": "opencode-go/deepseek-v4-flash",
+      "reason": "Validador puro (regex). DeepSeek Flash cost-optimized para pure functions.",
+      "status": "todo",
+      "dependencies": [
+        "T-004"
+      ],
+      "estimateHours": 0.5,
+      "files": [
+        "src/lib/username.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-007",
+      "phase": 2,
+      "title": "RPC register_profile con authenticateCustom",
+      "description": "Recibe username, valida (T-006), verifica unicidad en Storage, autentica con authenticateCustom customId=username, crea entrada 'profiles' con defaults del PRD §5.",
+      "model": "opencode/claude-sonnet-4-6",
+      "reason": "RPC con storage + auth + validación. Sonnet balancea capacidad y costo.",
+      "status": "todo",
+      "dependencies": [
+        "T-006"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "src/rpcs/register_profile.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-008",
+      "phase": 2,
+      "title": "RPC get_profile",
+      "description": "Lee colección 'profiles' por userId autenticado, retorna perfil completo o 404.",
+      "model": "opencode-go/minimax-m2.5",
+      "reason": "Lectura simple de storage. MiniMax M2.5 Go alcanza.",
+      "status": "todo",
+      "dependencies": [
+        "T-007"
+      ],
+      "estimateHours": 0.5,
+      "files": [
+        "src/rpcs/get_profile.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-009",
+      "phase": 2,
+      "title": "RPC update_display_name",
+      "description": "Cambia displayName (mutable), NO username. Valida longitud, sanitiza.",
+      "model": "opencode-go/glm-5.1",
+      "reason": "Update trivial. GLM Go.",
+      "status": "todo",
+      "dependencies": [
+        "T-007"
+      ],
+      "estimateHours": 0.5,
+      "files": [
+        "src/rpcs/update_display_name.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-010",
+      "phase": 2,
+      "title": "Tests RPCs de auth/perfil",
+      "description": "Tests de integración: registro exitoso, username duplicado, get profile, update name. Contra Nakama en Docker de test.",
+      "model": "opencode-go/deepseek-v4-flash",
+      "reason": "Tests integración patrón repetitivo. Flash barato.",
+      "status": "todo",
+      "dependencies": [
+        "T-007",
+        "T-008",
+        "T-009"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "tests/auth.spec.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-011",
+      "phase": 2,
+      "title": "UI cliente: pantalla de registro",
+      "description": "Componente con input username, validación en vivo (llama T-006 en cliente), botón 'empezar'. Muestra error si duplicado. Guarda session token.",
+      "model": "opencode/gpt-5.4",
+      "reason": "UI con estado + validación en vivo. GPT 5.4 fuerte en React.",
+      "status": "todo",
+      "dependencies": [
+        "T-007"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "client/src/screens/Register.tsx"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-012",
+      "phase": 3,
+      "title": "Endpoint de subida de foto (presigned URL a Cloudinary)",
+      "description": "RPC upload_photo_url que genera presigned URL a Cloudinary. Cliente sube directo. Retorna URL final.",
+      "model": "opencode/kimi-k3",
+      "reason": "Integración Cloudinary con firma. Kimi K3 sólido con APIs externas.",
+      "status": "todo",
+      "dependencies": [
+        "T-007"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "src/rpcs/upload_photo_url.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-013",
+      "phase": 3,
+      "title": "Detección de rostro cliente-side con face-api.js",
+      "description": "Preview de foto, bounding box del rostro, rechazo si no detecta. Recorte 1:1 antes de subir.",
+      "model": "opencode/gemini-3.1-pro",
+      "reason": "Canvas + face-api.js + UX. Gemini Pro bueno con librerías visuales.",
+      "status": "todo",
+      "dependencies": [
+        "T-011"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "client/src/lib/face-detect.ts",
+        "client/src/components/PhotoUpload.tsx"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-014",
+      "phase": 3,
+      "title": "Adaptador Replicate InstantID",
+      "description": "Cliente HTTP para Replicate API: crear prediction, poll de estado, retornar URL final. Retry con backoff.",
+      "model": "opencode/gpt-5.5",
+      "reason": "HTTP client con retry/polling. GPT 5.5 confiable en async patterns.",
+      "status": "todo",
+      "dependencies": [
+        "T-004"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "src/lib/replicate.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-015",
+      "phase": 3,
+      "title": "Data: plantilla de prompts por estilo",
+      "description": "Constantes con prompt positivo/negativo y params por estilo (pixar_3d, anime_shonen, comic_retro, chibi, pixel_16bit).",
+      "model": "opencode-go/glm-5.1",
+      "reason": "Constantes prompts. Data estática.",
+      "status": "todo",
+      "dependencies": [],
+      "estimateHours": 0.5,
+      "files": [
+        "src/data/avatar-prompts.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-016",
+      "phase": 3,
+      "title": "RPC generate_avatar",
+      "description": "Recibe {photoUrl, style}, arma prompt (T-015), llama Replicate (T-014), guarda avatarUrl+avatarStyle en perfil. Idempotente por hash.",
+      "model": "opencode/claude-opus-4-7",
+      "reason": "Orquesta API costosa + storage + idempotencia. Opus por robustez.",
+      "status": "todo",
+      "dependencies": [
+        "T-014",
+        "T-015",
+        "T-007"
+      ],
+      "estimateHours": 4,
+      "files": [
+        "src/rpcs/generate_avatar.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-017",
+      "phase": 3,
+      "title": "UI: flow de consentimiento + selector de estilo",
+      "description": "Checkbox obligatorio de consentimiento, cards con preview de estilos, loader durante generación con progreso.",
+      "model": "opencode/gemini-3.1-pro",
+      "reason": "UI multi-estado con previews. Gemini Pro fuerte en layouts complejos.",
+      "status": "todo",
+      "dependencies": [
+        "T-013",
+        "T-016"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "client/src/screens/AvatarStudio.tsx"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-018",
+      "phase": 4,
+      "title": "Definir opcodes y tipos de mensajes cliente/servidor",
+      "description": "Enum de opcodes (PUNCH_LEFT, PUNCH_RIGHT, BLOCK_START, BLOCK_END, SPECIAL, TELEGRAPH, STRIKE, STATE_TICK, KO). Tipos TS compartidos.",
+      "model": "opencode-go/glm-5.1",
+      "reason": "Enums y tipos. GLM Go simple.",
+      "status": "todo",
+      "dependencies": [
+        "T-004"
+      ],
+      "estimateHours": 0.5,
+      "files": [
+        "src/protocol/opcodes.ts",
+        "shared/types.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-019",
+      "phase": 4,
+      "title": "Match handler: matchInit + matchJoinAttempt + matchJoin",
+      "description": "Init: crea state (players vacíos, status waiting, tickRate 10). JoinAttempt: valida cupo 2 y modo. Join: agrega player con avatar.",
+      "model": "opencode/claude-opus-4-7",
+      "reason": "Base match autoritativa. Opus por criticidad server-side.",
+      "status": "todo",
+      "dependencies": [
+        "T-018"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "src/matches/combat.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-020",
+      "phase": 4,
+      "title": "Match handler: matchLeave + matchTerminate + matchSignal",
+      "description": "Leave: si status active → marca derrota y termina. Terminate: cleanup + hook postmatch. Signal: para comandos admin.",
+      "model": "opencode/claude-opus-4-7",
+      "reason": "Terminación con side effects (stats, rank). Opus.",
+      "status": "todo",
+      "dependencies": [
+        "T-019"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "src/matches/combat.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-021",
+      "phase": 4,
+      "title": "Match handler: matchLoop con tick 10Hz",
+      "description": "Loop principal: procesa opcodes recibidos, aplica reglas de combate (golpe, bloqueo, especial, charge), broadcast state delta a clientes.",
+      "model": "opencode/claude-opus-4-7",
+      "reason": "Tick loop 10Hz autoritativo. Corazón del juego, Opus.",
+      "status": "todo",
+      "dependencies": [
+        "T-019",
+        "T-018"
+      ],
+      "estimateHours": 6,
+      "files": [
+        "src/matches/combat.ts",
+        "src/matches/combat-rules.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-022",
+      "phase": 4,
+      "title": "Reglas de combate (funciones puras)",
+      "description": "resolvePunch(state, side, attacker), resolveBlock(state, side, player), resolveSpecial(state, attacker). Puras y testeables.",
+      "model": "opencode/gpt-5.6-sol",
+      "reason": "Reglas puras de combate. GPT 5.6 Sol razona matemática con precisión.",
+      "status": "todo",
+      "dependencies": [
+        "T-018"
+      ],
+      "estimateHours": 4,
+      "files": [
+        "src/matches/combat-rules.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-023",
+      "phase": 4,
+      "title": "Tests unitarios de reglas de combate",
+      "description": "Casos: golpe conecta, golpe bloqueado lado correcto, golpe bloqueado lado incorrecto, especial ignora bloqueo, charge se acumula, K.O. detectado.",
+      "model": "opencode-go/deepseek-v4-flash",
+      "reason": "Tests puros. Flash.",
+      "status": "todo",
+      "dependencies": [
+        "T-022"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "tests/combat-rules.spec.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-024",
+      "phase": 4,
+      "title": "UI cliente: HUD combate (vida, charge, guantes)",
+      "description": "Barras HP jugador/rival, medidor charge, guantes en esquinas inferiores que reaccionan a input.",
+      "model": "opencode/grok-4.6",
+      "reason": "UI juego con estado sincronizado. Grok fuerte en canvas + game UI.",
+      "status": "todo",
+      "dependencies": [
+        "T-018"
+      ],
+      "estimateHours": 4,
+      "files": [
+        "client/src/screens/Combat.tsx",
+        "client/src/components/Hud.tsx"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-025",
+      "phase": 4,
+      "title": "UI cliente: input handler + client-side prediction",
+      "description": "Captura A/D/S/Espacio, mapea a opcodes, envía al servidor. Animación local instantánea, corrección si servidor difiere.",
+      "model": "opencode/claude-opus-4-7",
+      "reason": "Client prediction + reconciliación. Opus.",
+      "status": "todo",
+      "dependencies": [
+        "T-024",
+        "T-021"
+      ],
+      "estimateHours": 4,
+      "files": [
+        "client/src/lib/input.ts",
+        "client/src/lib/prediction.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-026",
+      "phase": 5,
+      "title": "RPC create_friendly_room + generación de código",
+      "description": "Genera código 6-char (sin 0/O/1/I), verifica unicidad, crea match con mode friendly, guarda en Storage 'rooms' con TTL 15min.",
+      "model": "opencode/kimi-k3",
+      "reason": "Storage + generación con verificación. Kimi K3.",
+      "status": "todo",
+      "dependencies": [
+        "T-019"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "src/rpcs/create_friendly_room.ts",
+        "src/lib/room-code.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-027",
+      "phase": 5,
+      "title": "RPC join_friendly_room",
+      "description": "Busca código en 'rooms', retorna matchId. Cliente hace matchJoin. Error si expirado o lleno.",
+      "model": "opencode-go/glm-5.1",
+      "reason": "Lookup simple.",
+      "status": "todo",
+      "dependencies": [
+        "T-026"
+      ],
+      "estimateHours": 1,
+      "files": [
+        "src/rpcs/join_friendly_room.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-028",
+      "phase": 5,
+      "title": "Cleanup job: expirar salas viejas",
+      "description": "Función scheduled (cron dentro de Nakama runtime) que barre 'rooms' con TTL vencido cada 5min.",
+      "model": "opencode-go/mimo-v2.5",
+      "reason": "Cron acotado.",
+      "status": "todo",
+      "dependencies": [
+        "T-026"
+      ],
+      "estimateHours": 1,
+      "files": [
+        "src/jobs/expire-rooms.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-029",
+      "phase": 5,
+      "title": "UI: pantalla crear sala + copiar código",
+      "description": "Botón crear, muestra código grande copiable, waiting state hasta que se une otro jugador.",
+      "model": "opencode/gpt-5.4",
+      "reason": "UI async con copy-to-clipboard. GPT 5.4.",
+      "status": "todo",
+      "dependencies": [
+        "T-026"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "client/src/screens/CreateRoom.tsx"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-030",
+      "phase": 5,
+      "title": "UI: pantalla unirse con código",
+      "description": "Input 6-char (uppercase auto), botón unirse, error si no existe.",
+      "model": "opencode-go/glm-5.1",
+      "reason": "Form simple.",
+      "status": "todo",
+      "dependencies": [
+        "T-027"
+      ],
+      "estimateHours": 1,
+      "files": [
+        "client/src/screens/JoinRoom.tsx"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-031",
+      "phase": 6,
+      "title": "Data: roster de 10 rivales (PvE)",
+      "description": "Array con nombre, retrato URL, HP, daño, ventana telegraph, feint%, combo%, usa especial (bool). Nombres tontos del PRD.",
+      "model": "opencode-go/minimax-m2.5",
+      "reason": "Roster estático. MiniMax Go.",
+      "status": "todo",
+      "dependencies": [],
+      "estimateHours": 1,
+      "files": [
+        "src/data/rivals.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-032",
+      "phase": 6,
+      "title": "Motor de patrones de rival IA (máquina de estados)",
+      "description": "FSM idle→telegraph→strike→recover. Selector de acción probabilístico según parámetros del rival. Emite opcodes TELEGRAPH/STRIKE/FEINT.",
+      "model": "opencode/gemini-3.1-pro",
+      "reason": "FSM probabilística con timing. Gemini Pro razona bien state machines.",
+      "status": "todo",
+      "dependencies": [
+        "T-021",
+        "T-031"
+      ],
+      "estimateHours": 5,
+      "files": [
+        "src/matches/rival-ai.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-033",
+      "phase": 6,
+      "title": "Variante career del match handler",
+      "description": "Match handler modo career: 1 jugador + rival IA (T-032). Contador de knockdowns (2-3 antes de K.O. final).",
+      "model": "opencode/claude-sonnet-4-6",
+      "reason": "Extensión match handler. Sonnet.",
+      "status": "todo",
+      "dependencies": [
+        "T-021",
+        "T-032"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "src/matches/combat.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-034",
+      "phase": 6,
+      "title": "RPC start_career_match",
+      "description": "Lee careerProgress del perfil, carga rival correspondiente, crea match career.",
+      "model": "opencode-go/glm-5.1",
+      "reason": "Orquestación simple.",
+      "status": "todo",
+      "dependencies": [
+        "T-033"
+      ],
+      "estimateHours": 1,
+      "files": [
+        "src/rpcs/start_career_match.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-035",
+      "phase": 6,
+      "title": "Hook postmatch career: incrementar progreso",
+      "description": "Al vencer: careerProgress++, marca rival como derrotado, otorga XP. Al perder: no toca progreso.",
+      "model": "opencode/kimi-k3",
+      "reason": "Efectos storage con reglas. Kimi K3.",
+      "status": "todo",
+      "dependencies": [
+        "T-033"
+      ],
+      "estimateHours": 1,
+      "files": [
+        "src/hooks/postmatch-career.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-036",
+      "phase": 6,
+      "title": "UI: pantalla escalera de rivales",
+      "description": "Grid de 10 retratos, bloqueados con candado salvo el actual y los ya vencidos. Botón 'pelear' en el actual.",
+      "model": "opencode/grok-4.6",
+      "reason": "UI condicional con grid rivales. Grok.",
+      "status": "todo",
+      "dependencies": [
+        "T-034"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "client/src/screens/CareerLadder.tsx"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-037",
+      "phase": 7,
+      "title": "Fórmulas XP y nivel",
+      "description": "Funciones puras: awardXp(match), xpNeededForLevel(n)=100*n^1.5, levelFromXp(xp).",
+      "model": "opencode-go/deepseek-v4-flash",
+      "reason": "Fórmulas puras. Flash.",
+      "status": "todo",
+      "dependencies": [
+        "T-007"
+      ],
+      "estimateHours": 1,
+      "files": [
+        "src/lib/xp.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-038",
+      "phase": 7,
+      "title": "Tabla de unlocks por nivel",
+      "description": "Data: por cada nivel, qué se desbloquea (skin de guantes, estilo avatar, frase cómica).",
+      "model": "opencode-go/minimax-m2.5",
+      "reason": "Tabla estática.",
+      "status": "todo",
+      "dependencies": [],
+      "estimateHours": 1,
+      "files": [
+        "src/data/unlocks.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-039",
+      "phase": 7,
+      "title": "Data: pool de frases cómicas",
+      "description": "Array de frases con nivel de unlock. Base: POW, BONK, ZAS, CATAPLUM.",
+      "model": "opencode-go/glm-5.1",
+      "reason": "Data pool estático.",
+      "status": "todo",
+      "dependencies": [],
+      "estimateHours": 0.5,
+      "files": [
+        "src/data/comic-phrases.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-040",
+      "phase": 7,
+      "title": "Hook postmatch: aplicar XP + unlocks",
+      "description": "Calcula XP con T-037, actualiza perfil, si sube nivel aplica unlock de T-038, notifica al cliente.",
+      "model": "opencode/kimi-k3",
+      "reason": "Coordinación multi-hook. Kimi K3.",
+      "status": "todo",
+      "dependencies": [
+        "T-037",
+        "T-038",
+        "T-020"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "src/hooks/postmatch-xp.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-041",
+      "phase": 7,
+      "title": "Sistema de logros (definición + verificador)",
+      "description": "Definición de 4 logros iniciales (first_blood, cara_de_piedra, remontada, campeon). Verificador idempotente contra 'achievements' storage.",
+      "model": "opencode/qwen3.7-max",
+      "reason": "Lógica condiciones + idempotencia. Qwen Max fuerte en logic puzzles.",
+      "status": "todo",
+      "dependencies": [
+        "T-020"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "src/lib/achievements.ts",
+        "src/data/achievements.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-042",
+      "phase": 7,
+      "title": "Setup leaderboards (most_kos, current_streak)",
+      "description": "Registrar 2 leaderboards en InitModule via nk.leaderboardCreate. Update en postmatch hook.",
+      "model": "opencode/claude-sonnet-4-6",
+      "reason": "Setup leaderboards Nakama API. Sonnet.",
+      "status": "todo",
+      "dependencies": [
+        "T-020"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "src/leaderboards/setup.ts",
+        "src/hooks/postmatch-leaderboard.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-043",
+      "phase": 7,
+      "title": "UI: pantalla de perfil (nivel, xp, stats, logros)",
+      "description": "Muestra avatar, nombre, nivel/xp bar, wins/losses/kos, grid de logros desbloqueados/bloqueados.",
+      "model": "opencode/gemini-3.1-pro",
+      "reason": "UI perfil compuesta. Gemini Pro.",
+      "status": "todo",
+      "dependencies": [
+        "T-008",
+        "T-041"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "client/src/screens/Profile.tsx"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-044",
+      "phase": 7,
+      "title": "UI: pantalla leaderboards",
+      "description": "Tabs 'Más K.O.s' y 'Racha actual', lista paginada, resalta usuario actual.",
+      "model": "opencode/grok-4.6",
+      "reason": "UI leaderboards con tabs y paginación. Grok.",
+      "status": "todo",
+      "dependencies": [
+        "T-042"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "client/src/screens/Leaderboards.tsx"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-045",
+      "phase": 8,
+      "title": "Cálculo de Elo server-side",
+      "description": "computeElo(rankA, rankB, resultA, cleanKo): retorna nuevos rankScores para ambos. K=24, bonus +5 K.O. limpio.",
+      "model": "opencode/claude-opus-4-7",
+      "reason": "Elo math crítica. Opus zero-tolerance.",
+      "status": "todo",
+      "dependencies": [],
+      "estimateHours": 2,
+      "files": [
+        "src/lib/elo.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-046",
+      "phase": 8,
+      "title": "Tests de Elo (simetría, K.O. bonus, extremos)",
+      "description": "Verificar: A gana +X ≈ B pierde X, K.O. limpio suma bonus, ranks extremos no explotan.",
+      "model": "opencode-go/deepseek-v4-flash",
+      "reason": "Tests Elo simetría. Flash.",
+      "status": "todo",
+      "dependencies": [
+        "T-045"
+      ],
+      "estimateHours": 1,
+      "files": [
+        "tests/elo.spec.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-047",
+      "phase": 8,
+      "title": "Matchmaker query + widening progresivo",
+      "description": "Cliente llama matchmakerAdd con rankScore, retry a 10s (±250), 20s (±400). Server valida en accept callback.",
+      "model": "opencode/gpt-5.6-sol",
+      "reason": "Matchmaker widening UX-sensible. GPT 5.6 Sol razona timing.",
+      "status": "todo",
+      "dependencies": [
+        "T-019"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "src/matchmaker/config.ts",
+        "client/src/lib/matchmaker.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-048",
+      "phase": 8,
+      "title": "Bot fallback tras 30s sin match",
+      "description": "Ofrece pelear vs bot (reutiliza motor career T-032, escogiendo rival de dificultad cercana al rank).",
+      "model": "opencode/claude-sonnet-4-6",
+      "reason": "Bot fallback con selección de dificultad. Sonnet.",
+      "status": "todo",
+      "dependencies": [
+        "T-047",
+        "T-032"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "src/matchmaker/bot-fallback.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-049",
+      "phase": 8,
+      "title": "Hook postmatch ranked: actualizar Elo",
+      "description": "En modo ranked, al terminar match, llama T-045 con datos server-side, actualiza rankScore en ambos perfiles.",
+      "model": "opencode/claude-opus-4-7",
+      "reason": "Escritura crítica de rango. Opus.",
+      "status": "todo",
+      "dependencies": [
+        "T-045",
+        "T-020"
+      ],
+      "estimateHours": 2,
+      "files": [
+        "src/hooks/postmatch-ranked.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-050",
+      "phase": 8,
+      "title": "Función tierFromScore + badge",
+      "description": "Bronce/Plata/Oro/Leyenda Tonta desde rankScore. UI badge con color por tier.",
+      "model": "opencode-go/glm-5.1",
+      "reason": "Función simple + badge.",
+      "status": "todo",
+      "dependencies": [],
+      "estimateHours": 1,
+      "files": [
+        "src/lib/tier.ts",
+        "client/src/components/TierBadge.tsx"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-051",
+      "phase": 8,
+      "title": "UI: pantalla buscar partida ranked",
+      "description": "Botón buscar, indicador animado de rango ampliándose (±150→±250→±400), opción de bot tras 30s.",
+      "model": "opencode/gemini-3.1-pro",
+      "reason": "UI con timers y widening visual. Gemini Pro.",
+      "status": "todo",
+      "dependencies": [
+        "T-047"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "client/src/screens/RankedSearch.tsx"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-052",
+      "phase": 9,
+      "title": "Sistema de screen shake y camera FX",
+      "description": "shake(intensity, duration), zoom en especial, freeze frame en K.O. Toggle 'reduce motion' respetado.",
+      "model": "opencode/gpt-5.4",
+      "reason": "FX cámara con timing y accesibilidad. GPT 5.4.",
+      "status": "todo",
+      "dependencies": [
+        "T-024"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "client/src/fx/camera.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-053",
+      "phase": 9,
+      "title": "Integración de SFX + música",
+      "description": "Cargar y disparar SFX por evento (pow, whoosh, block, special, ko). Music loops lobby/combate.",
+      "model": "opencode/kimi-k3",
+      "reason": "Audio con estados. Kimi K3.",
+      "status": "todo",
+      "dependencies": [
+        "T-024"
+      ],
+      "estimateHours": 3,
+      "files": [
+        "client/src/audio/manager.ts",
+        "client/src/audio/sfx-map.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-054",
+      "phase": 9,
+      "title": "Animaciones de guantes y reacciones",
+      "description": "Sprites/tweens: guantes al golpear, hurt reaction, KO caída, golpe fallido cómico.",
+      "model": "opencode/grok-4.6",
+      "reason": "Animaciones con timing. Grok.",
+      "status": "todo",
+      "dependencies": [
+        "T-025"
+      ],
+      "estimateHours": 4,
+      "files": [
+        "client/src/fx/animations.ts"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-055",
+      "phase": 9,
+      "title": "Overlay de texto cómic POW/BONK/ZAS",
+      "description": "Componente que aparece 300ms al conectar golpe, texto random del pool T-039 desbloqueado.",
+      "model": "opencode-go/mimo-v2.5",
+      "reason": "Componente visual chico.",
+      "status": "todo",
+      "dependencies": [
+        "T-039",
+        "T-024"
+      ],
+      "estimateHours": 1,
+      "files": [
+        "client/src/fx/ComicText.tsx"
+      ],
+      "comments": []
+    },
+    {
+      "id": "T-056",
+      "phase": 9,
+      "title": "Sesión de playtesting + ajustes de balance",
+      "description": "Playtest con 3-5 jugadores. Ajustar ventanas telegraph rival por rival, carga especial, HP champ. Documentar cambios.",
+      "model": "opencode/claude-opus-4-7",
+      "reason": "Balance con juicio de diseño. Opus.",
+      "status": "todo",
+      "dependencies": [
+        "T-036",
+        "T-051",
+        "T-052",
+        "T-053",
+        "T-054"
+      ],
+      "estimateHours": 4,
+      "files": [
+        "src/data/rivals.ts",
+        "docs/balance-notes.md"
+      ],
+      "comments": []
+    }
+  ]
+}

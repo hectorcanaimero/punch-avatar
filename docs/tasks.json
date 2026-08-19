@@ -1159,7 +1159,7 @@
       "description": "Verificar: A gana +X ≈ B pierde X, K.O. limpio suma bonus, ranks extremos no explotan.",
       "model": "opencode-go/deepseek-v4-flash",
       "reason": "Tests Elo simetría. Flash.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-045"
       ],
@@ -1167,7 +1167,13 @@
       "files": [
         "tests/elo.spec.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/deepseek-v4-pro",
+          "text": "20 tests Elo: expected score en [0,1], simetría (A gana +X ≈ B pierde X, tol ±1 por redondeo), bonus KO limpio solo al ganador, empate ignora bonus, clamp a 0, extremos finitos, validación de inputs. Todos verdes (bundle esbuild).",
+          "ts": "2026-08-19T02:28:31Z"
+        }
+      ]
     },
     {
       "id": "T-047",

@@ -660,7 +660,7 @@
       "description": "Captura A/D/S/Espacio, mapea a opcodes, envía al servidor. Animación local instantánea, corrección si servidor difiere.",
       "model": "opencode/claude-opus-4-7",
       "reason": "Client prediction + reconciliación. Opus.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-024",
         "T-021"
@@ -670,7 +670,13 @@
         "client/src/lib/input.ts",
         "client/src/lib/prediction.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "claude-opus-4-7",
+          "text": "input.ts: attachInputHandler mapea KeyA/D/S/Space → ClientMessage con dedup (KeyboardEvent.repeat + set pressed) y BLOCK_END auto en window blur. translateActionDown pure para tests. Block side configurable (default 'left' — S no distingue side sin combo, MVP-aceptable). prediction.ts: solo cosmético (activeGlove 200ms + pendingSpecial), NUNCA predice HP/carga/daño porque server es autoritativo y una corrección visible sería peor UX. predictLocalInput/tickPrediction/reconcileServerMessage/initialPredictionState todas puras. 15 tests unit (4 input + 11 prediction). Server + client typecheck sin errores, 34 tests server regresión sin fallas.",
+          "ts": "2026-08-19T01:44:00Z"
+        }
+      ]
     },
     {
       "id": "T-026",
@@ -911,13 +917,19 @@
       "description": "Array de frases con nivel de unlock. Base: POW, BONK, ZAS, CATAPLUM.",
       "model": "opencode-go/glm-5.1",
       "reason": "Data pool estático.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [],
       "estimateHours": 0.5,
       "files": [
         "src/data/comic-phrases.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.6-sol",
+          "text": "Implementado pool tipado de 10 frases con nivel y keys alineadas a T-038. Sustitución de glm-5.1 por gpt-5.6-sol; scope estático equivalente. Typecheck y referencias validadas.",
+          "ts": "2026-08-19T01:53:13Z"
+        }
+      ]
     },
     {
       "id": "T-040",

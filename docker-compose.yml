@@ -1,0 +1,55 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: punch-postgres
+    environment:
+      POSTGRES_DB: nakama
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: localdb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - punch-net
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "nakama"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  nakama:
+    image: heroiclabs/nakama:3.40.0
+    container_name: punch-nakama
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint:
+      - "/bin/sh"
+      - "-ecx"
+      - >
+        /nakama/nakama migrate up --database.address postgres:localdb@postgres:5432/nakama &&
+        exec /nakama/nakama --config /nakama/data/nakama.yml --database.address postgres:localdb@postgres:5432/nakama
+    volumes:
+      - ./nakama.yml:/nakama/data/nakama.yml
+      - ./build/index.js:/nakama/data/build/index.js
+    ports:
+      - "7350:7350"
+      - "7351:7351"
+      - "7349:7349"
+    networks:
+      - punch-net
+    healthcheck:
+      test: ["CMD", "/nakama/nakama", "healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+networks:
+  punch-net:
+    driver: bridge
+
+volumes:
+  postgres-data:

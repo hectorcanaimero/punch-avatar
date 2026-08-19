@@ -90,13 +90,19 @@
       "description": "Servicios nakama:3.x y postgres:15, red interna, volumen persistente, healthchecks. Puertos 7350 (client), 7351 (console), 7349 (grpc).",
       "model": "opencode-go/glm-5.1",
       "reason": "Config docker-compose estático. GLM Go barato y consistente para YAML.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [],
       "estimateHours": 1,
       "files": [
         "docker-compose.yml"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode-go/glm-5.1",
+          "text": "Done. Nakama pinned heroiclabs/nakama:3.40.0 + postgres:15. Red bridge punch-net, volumen postgres-data. Postgres healthy en ~8s. Paths internos: config /nakama/data/nakama.yml, bundle /nakama/data/build/index.js — T-002 apuntar runtime.path ahí. Postgres no expuesto al host (interno). DB creds postgres:localdb@postgres:5432/nakama. Entrypoint corre migrate up antes de arrancar.",
+          "ts": "2026-08-18T23:27:00Z"
+        }
+      ]
     },
     {
       "id": "T-002",

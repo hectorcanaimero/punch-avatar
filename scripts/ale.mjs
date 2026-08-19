@@ -15,6 +15,7 @@ const TASKS_LOCK = TASKS_PATH + ".lock";
 const AGENTS_PATH = join(REPO_ROOT, "AGENTS.md");
 const SPECS_DIR = join(REPO_ROOT, "docs", "specs");
 const RUNS_LOG = join(REPO_ROOT, "docs", "ale-runs.jsonl");
+const DASHBOARD_PATH = join(REPO_ROOT, "docs", "dashboard", "index.html");
 
 const CLAUDE_BIN = "claude";
 const OPENCODE_BIN = "opencode";
@@ -62,6 +63,34 @@ function writeTasks(data) {
   // Preserve 2-space indent + trailing newline.
   const out = JSON.stringify(data, null, 2) + "\n";
   writeFileSync(TASKS_PATH, out, "utf8");
+}
+
+// Format a task as one-line JSON matching the dashboard's existing style
+// (spaces after colons and commas). Regex is safe because JSON escapes `"` inside strings.
+function stringifyTaskInline(obj) {
+  return JSON.stringify(obj).replace(/":/g, '": ').replace(/,"/g, ', "');
+}
+
+function syncDashboard() {
+  if (!existsSync(DASHBOARD_PATH)) {
+    return { updated: false, reason: "dashboard not found" };
+  }
+  const { data } = readTasks();
+  const html = readFileSync(DASHBOARD_PATH, "utf8");
+  const pattern = /(  "tasks":\s*\[\r?\n)[\s\S]*?(\r?\n  \]\r?\n};)/;
+  if (!pattern.test(html)) {
+    return { updated: false, reason: "tasks block marker not found in dashboard" };
+  }
+  const tasks = Array.isArray(data.tasks) ? data.tasks : [];
+  const body = tasks
+    .map((t, i) => `    ${stringifyTaskInline(t)}${i === tasks.length - 1 ? "" : ","}`)
+    .join("\n");
+  const next = html.replace(pattern, `$1${body}$2`);
+  if (next === html) {
+    return { updated: false, reason: "no changes" };
+  }
+  writeFileSync(DASHBOARD_PATH, next, "utf8");
+  return { updated: true, count: tasks.length };
 }
 
 // ---------- Lock (concurrency safety) ----------
@@ -215,6 +244,8 @@ Commands:
   run  --task <id>              Execute one task
   run  --next                   Execute the next ready task
   run  --all                    Loop over ready tasks; stop on first failure
+  sync                          Sync the HTML dashboard with the current tasks.json
+                                (auto-runs after every 'run')
   --help                        Show this help
 
 Aliases:
@@ -267,6 +298,15 @@ function pickTaskForAction(data, opts) {
     return ready[0];
   }
   throw new Error("Specify --task <id> or --next");
+}
+
+function cmdSync() {
+  const result = syncDashboard();
+  if (result.updated) {
+    console.log(paint(C.green, `✓ Dashboard synced (${result.count} tasks) → ${DASHBOARD_PATH}`));
+  } else {
+    console.log(paint(C.yellow, `⚠ Dashboard NOT synced: ${result.reason}`));
+  }
 }
 
 function cmdPlan(opts) {
@@ -390,6 +430,13 @@ async function runTaskById(taskId) {
   const durationMs = ended.getTime() - started.getTime();
   const { resultStatus, forcedBlock } = await finalizeTaskStatus(task.id, exitCode);
 
+  try {
+    const sync = syncDashboard();
+    if (sync.updated) console.log(paint(C.dim, `  (dashboard synced: ${sync.count} tasks)`));
+  } catch (err) {
+    console.error(paint(C.dim, `  (dashboard sync failed: ${err.message})`));
+  }
+
   appendRunLog({
     taskId: task.id,
     model: task.model,
@@ -449,7 +496,7 @@ function parseArgs(argv) {
   }
 
   const first = args[0];
-  if (first === "list" || first === "plan" || first === "run") {
+  if (first === "list" || first === "plan" || first === "run" || first === "sync") {
     opts.command = first;
   } else if (first === "--dry-run") {
     opts.command = "plan";
@@ -502,6 +549,9 @@ async function main() {
         return;
       case "run":
         await cmdRun(opts);
+        return;
+      case "sync":
+        cmdSync();
         return;
     }
   } catch (err) {

@@ -869,7 +869,7 @@
       "description": "Lee careerProgress del perfil, carga rival correspondiente, crea match career.",
       "model": "opencode-go/glm-5.1",
       "reason": "Orquestación simple.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-033"
       ],
@@ -877,7 +877,13 @@
       "files": [
         "src/rpcs/start_career_match.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "claude-opus-4-7",
+          "text": "Sustitución opencode-go/glm-5.1→opus (sesión cargada). RPC autenticado: lee profile.careerProgress, resuelve rival del roster RIVALS[i] (T-031), llama nk.matchCreate('combat', {mode:'career', rivalIndex}) que dispara la variante career del match handler (T-033: pre-inserta bot con sessionId sintético + RivalAiEngine T-032). Response incluye matchId + rival {index,name,portraitUrl,health} + careerProgress + totalRivals para que la UI de escalera renderice. Throw CAREER_COMPLETED cuando progress>=RIVALS.length. pickCareerRival exportada pura (defaults defensivos: undefined/string/NaN/Infinity→0, negativos clampeados, fraccionales truncados). 10 tests. Registrado en main.ts. Build OK, Nakama boot OK. Nota: main.ts diff incluye también startBotFallbackMatchRpc del parallel worker (no separable con git add -p sin interactivo).",
+          "ts": "2026-08-19T02:18:00Z"
+        }
+      ]
     },
     {
       "id": "T-035",

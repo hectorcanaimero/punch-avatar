@@ -1,5 +1,6 @@
 import { expireRoomsMatchHandler, startExpireRoomsJob } from "./jobs/expire-rooms";
 import { registerLeaderboards } from "./leaderboards/setup";
+import { startBotFallbackMatchRpc } from "./matchmaker/bot-fallback";
 import { rankedMatchmakerMatched } from "./matchmaker/config";
 import { combatMatchHandler } from "./matches/combat";
 import { createFriendlyRoomRpc } from "./rpcs/create_friendly_room";
@@ -8,6 +9,7 @@ import { joinFriendlyRoomRpc } from "./rpcs/join_friendly_room";
 import { getProfileRpc } from "./rpcs/get_profile";
 import { pingRpc } from "./rpcs/ping";
 import { registerProfileRpc } from "./rpcs/register_profile";
+import { startCareerMatchRpc } from "./rpcs/start_career_match";
 import { updateDisplayNameRpc } from "./rpcs/update_display_name";
 import { uploadPhotoUrlRpc } from "./rpcs/upload_photo_url";
 
@@ -25,6 +27,8 @@ function InitModule(
   initializer.registerRpc("generate_avatar", generateAvatarRpc);
   initializer.registerRpc("create_friendly_room", createFriendlyRoomRpc);
   initializer.registerRpc("join_friendly_room", joinFriendlyRoomRpc);
+  initializer.registerRpc("start_bot_fallback_match", startBotFallbackMatchRpc);
+  initializer.registerRpc("start_career_match", startCareerMatchRpc);
   initializer.registerMatch("combat", combatMatchHandler);
   initializer.registerMatch("expire_rooms", expireRoomsMatchHandler);
   initializer.registerMatchmakerMatched(rankedMatchmakerMatched);

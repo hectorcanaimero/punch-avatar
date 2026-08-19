@@ -816,7 +816,7 @@
       "description": "Match handler modo career: 1 jugador + rival IA (T-032). Contador de knockdowns (2-3 antes de K.O. final).",
       "model": "opencode/claude-sonnet-4-6",
       "reason": "Extensión match handler. Sonnet.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "T-021",
         "T-032"
@@ -825,7 +825,13 @@
       "files": [
         "src/matches/combat.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/claude-opus-4-7",
+          "text": "Done. Sustituí sonnet→opus (hilo). matchInit(career) pre-inserta rival sintético (sessionId='rival') e instancia RivalAiEngine. matchJoin acepta 1 humano más. matchLoop tickea AI post-inputs; applyRivalStrike aplica damage con block/special check (bypass reglas por damage per-tier). processKnockdowns: 2 caídas + KO final (PRD §2), reset a maxHealth+charge/blocking; rival AI se reinicia. Bundle 52.3kb.",
+          "ts": "2026-08-19T02:04:07Z"
+        }
+      ]
     },
     {
       "id": "T-034",
@@ -1101,7 +1107,7 @@
       "description": "Cliente llama matchmakerAdd con rankScore, retry a 10s (±250), 20s (±400). Server valida en accept callback.",
       "model": "opencode/gpt-5.6-sol",
       "reason": "Matchmaker widening UX-sensible. GPT 5.6 Sol razona timing.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "T-019"
       ],
@@ -1110,7 +1116,13 @@
         "src/matchmaker/config.ts",
         "client/src/lib/matchmaker.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.6-sol",
+          "text": "Implementado widening ±150/250/400 a 0/10/20s, cancelación segura y callback autoritativo que relee rankScore de Storage. Tests 4/4 y typechecks aislados OK.",
+          "ts": "2026-08-19T02:03:49Z"
+        }
+      ]
     },
     {
       "id": "T-048",

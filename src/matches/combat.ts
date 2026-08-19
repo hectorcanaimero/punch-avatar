@@ -1,3 +1,5 @@
+import { COMBAT_BALANCE } from "../config/combat";
+import { RIVALS, type Rival } from "../data/rivals";
 import { ClientOpcode, ServerOpcode } from "../protocol/opcodes";
 import {
   resolveBlock,
@@ -5,6 +7,10 @@ import {
   resolveSpecial,
   type CombatState as RuleState,
 } from "./combat-rules";
+import {
+  RivalAiEngine,
+  type RivalStrikeOutput,
+} from "./rival-ai";
 import type { MatchStatus, PlayerStateView, Side, Stance } from "../../shared/types";
 
 const MAX_PLAYERS = 2;
@@ -12,6 +18,10 @@ const TICK_RATE = 10;
 const COUNTDOWN_TICKS = 30; // 3s @ 10Hz — waiting → countdown → active
 const COMIC_MISS_PROB = 0.05;
 const VULNERABLE_TICKS = 5; // 500ms de stance vulnerable tras miss cómico
+const RIVAL_SESSION_ID = "rival";
+const CAREER_KNOCKDOWNS = 2; // 2 knockdowns + KO final = 3 caídas totales (PRD §2)
+const VERSUS_KNOCKDOWNS = 0; // en versus el primer KO cierra el match
+const PLAYER_MAX_HEALTH = 100;
 
 export type CombatMode = "friendly" | "ranked" | "career";
 
@@ -21,11 +31,14 @@ export interface CombatPlayerState {
   avatarUrl: string;
   displayName: string;
   health: number;
+  maxHealth: number;
+  knockdownsRemaining: number;
   blocking: boolean;
   blockSide: Side | null;
   charge: number;
   stance: Stance;
   vulnerableUntilTick: number | null;
+  isBot: boolean;
 }
 
 export interface CombatState {
@@ -37,11 +50,15 @@ export interface CombatState {
   tick: number;
   countdownEndTick: number | null;
   createdAtMs: number;
+  // Career-only fields (null en versus).
+  rivalIndex: number | null;
+  rivalAi: RivalAiEngine | null;
 }
 
 interface MatchInitParams {
   mode?: string;
   code?: string;
+  rivalIndex?: number;
 }
 
 function normalizeMode(raw: string | undefined): CombatMode {
@@ -82,15 +99,46 @@ function readProfileForPresence(
   }
 }
 
+function clampRivalIndex(raw: number | undefined): number {
+  const n = typeof raw === "number" && Number.isFinite(raw) ? Math.floor(raw) : 0;
+  return Math.max(0, Math.min(RIVALS.length - 1, n));
+}
+
+function knockdownsForMode(mode: CombatMode): number {
+  return mode === "career" ? CAREER_KNOCKDOWNS : VERSUS_KNOCKDOWNS;
+}
+
+function createBotPlayerFromRival(
+  rival: Rival,
+  mode: CombatMode
+): CombatPlayerState {
+  return {
+    userId: `bot:${rival.name}`,
+    sessionId: RIVAL_SESSION_ID,
+    avatarUrl: rival.portraitUrl,
+    displayName: rival.name,
+    health: rival.health,
+    maxHealth: rival.health,
+    knockdownsRemaining: knockdownsForMode(mode),
+    blocking: false,
+    blockSide: null,
+    charge: 0,
+    stance: "idle",
+    vulnerableUntilTick: null,
+    isBot: true,
+  };
+}
+
 const matchInit: nkruntime.MatchInitFunction<CombatState> = (
   _ctx,
-  _logger,
+  logger,
   _nk,
   params
 ) => {
   const p = (params ?? {}) as MatchInitParams;
+  const mode = normalizeMode(p.mode);
   const state: CombatState = {
-    mode: normalizeMode(p.mode),
+    mode,
     code: typeof p.code === "string" && p.code.length > 0 ? p.code : null,
     players: {},
     status: "waiting",
@@ -98,7 +146,27 @@ const matchInit: nkruntime.MatchInitFunction<CombatState> = (
     tick: 0,
     countdownEndTick: null,
     createdAtMs: Date.now(),
+    rivalIndex: null,
+    rivalAi: null,
   };
+
+  // WHY: en career pre-insertamos el rival como player sintético con sessionId
+  // fijo. Ocupa 1 de 2 slots, matchJoinAttempt sólo acepta 1 humano más y el
+  // motor de IA se instancia acá para no depender del orden del join.
+  if (mode === "career") {
+    const idx = clampRivalIndex(p.rivalIndex);
+    const rival = RIVALS[idx];
+    state.rivalIndex = idx;
+    state.players[RIVAL_SESSION_ID] = createBotPlayerFromRival(rival, mode);
+    state.rivalAi = new RivalAiEngine(rival, {
+      attackerId: RIVAL_SESSION_ID,
+      targetId: "", // se resuelve dinámicamente en el loop (el otro sessionId).
+    });
+    logger.info(
+      `combat: career match with rival[${idx}] ${rival.name} (hp=${rival.health}, dmg=${rival.damage})`
+    );
+  }
+
   return {
     state,
     tickRate: TICK_RATE,
@@ -148,12 +216,15 @@ const matchJoin: nkruntime.MatchJoinFunction<CombatState> = (
       sessionId: pres.sessionId,
       avatarUrl: profile.avatarUrl,
       displayName: profile.displayName,
-      health: 100,
+      health: PLAYER_MAX_HEALTH,
+      maxHealth: PLAYER_MAX_HEALTH,
+      knockdownsRemaining: knockdownsForMode(state.mode),
       blocking: false,
       blockSide: null,
       charge: 0,
       stance: "idle",
       vulnerableUntilTick: null,
+      isBot: false,
     };
   }
   dispatcher.matchLabelUpdate(buildLabel(state));
@@ -246,6 +317,94 @@ function opponentSessionId(
   const ids = Object.keys(state.players);
   if (ids.length !== 2 || !state.players[sessionId]) return null;
   return ids[0] === sessionId ? ids[1] : ids[0];
+}
+
+/**
+ * Applies an AI-generated strike directly to the target, respecting block and
+ * special rules. Returns { damage, blocked } for downstream broadcast.
+ * WHY: no usamos resolvePunch para AI porque el damage viene por-rival del
+ * roster, no del constante COMBAT_BALANCE.punchDamage.
+ */
+function applyRivalStrike(
+  state: CombatState,
+  strike: RivalStrikeOutput,
+  targetSessionId: string
+): { damage: number; blocked: boolean } {
+  const target = state.players[targetSessionId];
+  const attacker = state.players[strike.attackerId];
+  if (!target || !attacker) return { damage: 0, blocked: false };
+
+  // Special ignora bloqueo (PRD §2).
+  const blocked =
+    !strike.isSpecial &&
+    target.blocking &&
+    target.blockSide === strike.side;
+  if (blocked) return { damage: 0, blocked: true };
+
+  const damage = strike.damage;
+  target.health = Math.max(0, target.health - damage);
+  attacker.charge = Math.min(
+    COMBAT_BALANCE.maxCharge,
+    attacker.charge + COMBAT_BALANCE.chargePerConnectedHit
+  );
+  target.charge = Math.min(
+    COMBAT_BALANCE.maxCharge,
+    target.charge + COMBAT_BALANCE.chargePerConnectedHit
+  );
+  return { damage, blocked: false };
+}
+
+/**
+ * Post-damage check: si algún player quedó en 0 HP con knockdowns disponibles,
+ * lo levantamos (reset a maxHealth) y consumimos 1 knockdown. Solo cuando NO
+ * quedan knockdowns dejamos que status='ended' se propague.
+ * También si las reglas ya marcaron ended con un winner pero hay knockdowns,
+ * revertimos a active. Devuelve true si hubo un knockdown (para efectos).
+ */
+function processKnockdowns(
+  state: CombatState,
+  logger: nkruntime.Logger,
+  dispatcher: nkruntime.MatchDispatcher
+): void {
+  for (const sid of Object.keys(state.players)) {
+    const p = state.players[sid];
+    if (p.health > 0) continue;
+
+    if (p.knockdownsRemaining > 0) {
+      p.knockdownsRemaining -= 1;
+      p.health = p.maxHealth;
+      p.charge = 0;
+      p.blocking = false;
+      p.blockSide = null;
+      p.stance = "idle";
+      p.vulnerableUntilTick = null;
+      // Rules pueden haber puesto status='ended' con winner; revertimos.
+      if ((state.status as MatchStatus) === "ended") {
+        state.status = "active";
+        state.winner = null;
+      }
+      // Reset rival AI para no seguir en telegraph atascado tras knockdown.
+      if (state.rivalAi && sid === RIVAL_SESSION_ID) {
+        state.rivalAi.reset();
+      }
+      logger.info(
+        `combat: knockdown ${p.userId} (${p.knockdownsRemaining} left, mode=${state.mode})`
+      );
+      // Notificamos con STATE_TICK adicional (el loop ya broadcastea uno al final,
+      // pero uno inmediato asegura que el cliente vea el reset de HP como evento).
+      dispatcher.broadcastMessage(
+        ServerOpcode.STATE_TICK,
+        JSON.stringify({
+          opcode: ServerOpcode.STATE_TICK,
+          tick: state.tick,
+          players: playerViewsForBroadcast(state),
+          status: state.status,
+          winner: state.winner,
+          knockdown: { sessionId: sid, remaining: p.knockdownsRemaining },
+        })
+      );
+    }
+  }
 }
 
 function playerViewsForBroadcast(
@@ -371,6 +530,7 @@ const matchLoop: nkruntime.MatchLoopFunction<CombatState> = (
               blocked: damage === 0,
             })
           );
+          processKnockdowns(state, logger, dispatcher);
           break;
         }
         case ClientOpcode.BLOCK_START: {
@@ -405,6 +565,7 @@ const matchLoop: nkruntime.MatchLoopFunction<CombatState> = (
               special: true,
             })
           );
+          processKnockdowns(state, logger, dispatcher);
           break;
         }
         default:
@@ -412,6 +573,40 @@ const matchLoop: nkruntime.MatchLoopFunction<CombatState> = (
       }
 
       if ((state.status as MatchStatus) === "ended") break; // KO detectado por las reglas
+    }
+  }
+
+  // 3b. Rival AI tick (career only). Corre después de procesar inputs del humano
+  // para que el rival reaccione al estado ya actualizado del mismo tick.
+  if (
+    state.status === "active" &&
+    state.rivalAi !== null &&
+    state.players[RIVAL_SESSION_ID]
+  ) {
+    const aiResult = state.rivalAi.tick();
+    for (const msg of aiResult.serverMessages) {
+      dispatcher.broadcastMessage(msg.opcode, JSON.stringify(msg));
+    }
+    if (aiResult.strike) {
+      const humanSid = Object.keys(state.players).find(
+        (sid) => sid !== RIVAL_SESSION_ID
+      );
+      if (humanSid) {
+        const outcome = applyRivalStrike(state, aiResult.strike, humanSid);
+        dispatcher.broadcastMessage(
+          ServerOpcode.STRIKE,
+          JSON.stringify({
+            opcode: ServerOpcode.STRIKE,
+            side: aiResult.strike.side,
+            attackerId: state.players[RIVAL_SESSION_ID].userId,
+            targetId: state.players[humanSid].userId,
+            damage: outcome.damage,
+            blocked: outcome.blocked,
+            special: aiResult.strike.isSpecial,
+          })
+        );
+        processKnockdowns(state, logger, dispatcher);
+      }
     }
   }
 

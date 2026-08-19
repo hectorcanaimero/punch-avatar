@@ -934,6 +934,11 @@
           "author": "opencode/gpt-5.6-sol",
           "text": "Implementado pool tipado de 10 frases con nivel y keys alineadas a T-038. Sustitución de glm-5.1 por gpt-5.6-sol; scope estático equivalente. Typecheck y referencias validadas.",
           "ts": "2026-08-19T01:53:13Z"
+        },
+        {
+          "author": "opencode/gpt-5.6-sol",
+          "text": "Cierre git: pool verificado y commiteado en archivo propio; dashboard resincronizado.",
+          "ts": "2026-08-19T01:53:46Z"
         }
       ]
     },
@@ -963,7 +968,7 @@
       "description": "Definición de 4 logros iniciales (first_blood, cara_de_piedra, remontada, campeon). Verificador idempotente contra 'achievements' storage.",
       "model": "opencode/qwen3.7-max",
       "reason": "Lógica condiciones + idempotencia. Qwen Max fuerte en logic puzzles.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "T-020"
       ],
@@ -972,7 +977,13 @@
         "src/lib/achievements.ts",
         "src/data/achievements.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.6-sol",
+          "text": "Implementados 4 logros y verificador idempotente con writes create-only. 5 tests pasan. Sustitución de qwen3.7-max por gpt-5.6-sol: lógica acotada y cubierta por tests.",
+          "ts": "2026-08-19T01:54:35.064Z"
+        }
+      ]
     },
     {
       "id": "T-042",
@@ -981,7 +992,7 @@
       "description": "Registrar 2 leaderboards en InitModule via nk.leaderboardCreate. Update en postmatch hook.",
       "model": "opencode/claude-sonnet-4-6",
       "reason": "Setup leaderboards Nakama API. Sonnet.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-020"
       ],
@@ -990,7 +1001,13 @@
         "src/leaderboards/setup.ts",
         "src/hooks/postmatch-leaderboard.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/claude-opus-4-7",
+          "text": "Done. Sustituí sonnet→opus (hilo). 2 leaderboards: most_kos (desc/INCR) y current_streak (desc/SET). registerLeaderboards idempotente (catch already-exists). updateLeaderboardsAfterMatch(input) — winner suma KO (si isKo) y streak+1; loser resetea streak=0. Registrado en InitModule. Bundle 32.1kb.",
+          "ts": "2026-08-19T01:55:11Z"
+        }
+      ]
     },
     {
       "id": "T-043",

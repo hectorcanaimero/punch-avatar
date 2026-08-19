@@ -1,3 +1,4 @@
+import { registerLeaderboards } from "./leaderboards/setup";
 import { combatMatchHandler } from "./matches/combat";
 import { generateAvatarRpc } from "./rpcs/generate_avatar";
 import { getProfileRpc } from "./rpcs/get_profile";
@@ -9,7 +10,7 @@ import { uploadPhotoUrlRpc } from "./rpcs/upload_photo_url";
 function InitModule(
   _ctx: nkruntime.Context,
   logger: nkruntime.Logger,
-  _nk: nkruntime.Nakama,
+  nk: nkruntime.Nakama,
   initializer: nkruntime.Initializer
 ): void {
   initializer.registerRpc("ping", pingRpc);
@@ -19,6 +20,8 @@ function InitModule(
   initializer.registerRpc("upload_photo_url", uploadPhotoUrlRpc);
   initializer.registerRpc("generate_avatar", generateAvatarRpc);
   initializer.registerMatch("combat", combatMatchHandler);
+
+  registerLeaderboards(nk, logger);
 
   logger.info("punch runtime loaded");
 }

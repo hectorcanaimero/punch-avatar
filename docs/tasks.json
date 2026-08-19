@@ -1391,7 +1391,7 @@
       "description": "Playtest con 3-5 jugadores. Ajustar ventanas telegraph rival por rival, carga especial, HP champ. Documentar cambios.",
       "model": "opencode/claude-opus-4-7",
       "reason": "Balance con juicio de diseño. Opus.",
-      "status": "todo",
+      "status": "blocked",
       "dependencies": [
         "T-036",
         "T-051",
@@ -1404,7 +1404,13 @@
         "src/data/rivals.ts",
         "docs/balance-notes.md"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "claude-opus-4-7",
+          "text": "BLOCKED: task requiere 3-5 humanos jugando sesiones reales + juicio cualitativo (feel de golpe, telegraph legibility, pace) que un agente IA no puede ejercer honestamente sin observación humana. Deps cumplidas: T-036/051/052/053/054 done. Preparé la infra para que el playtest sea productivo: (a) scripts/simulate-balance.mjs: análisis paramétrico rival por rival — reveló baseline curva plana (9/10 rivales TOO_EASY por modelo, solo campeón OK). (b) docs/balance-notes.md: template con baseline, guía para playtesters, tabla por rival D/F/J, formato de ajustes + re-simulación. Unblock: el owner humano corre la sesión con 3-5 personas, documenta en balance-notes.md, aplica ajustes a src/data/rivals.ts + src/config/combat.ts, re-corre el simulador, y cambia status a done cuando esté satisfecho con el balance.",
+          "ts": "2026-08-19T02:50:00Z"
+        }
+      ]
     }
   ]
 }

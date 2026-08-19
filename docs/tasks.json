@@ -321,7 +321,7 @@
       "description": "Componente con input username, validación en vivo (llama T-006 en cliente), botón 'empezar'. Muestra error si duplicado. Guarda session token.",
       "model": "opencode/gpt-5.4",
       "reason": "UI con estado + validación en vivo. GPT 5.4 fuerte en React.",
-      "status": "blocked",
+      "status": "done",
       "dependencies": [
         "T-007"
       ],
@@ -334,6 +334,11 @@
           "author": "opencode/gpt-5.4",
           "text": "Bloqueado: no existe scaffold cliente ni dependencias React/Nakama; solo hay runtime servidor. Falta una task previa que cree client, configure TS/React y exponga validateUsername para browser.",
           "ts": "2026-08-19T01:23:43Z"
+        },
+        {
+          "author": "opencode/gpt-5.4",
+          "text": "Implementado. Scaffold cliente React/TS + Nakama JS; validación compartida en vivo, registro, error USERNAME_TAKEN y token en localStorage. Typecheck cliente OK.",
+          "ts": "2026-08-19T01:34:01Z"
         }
       ]
     },
@@ -429,7 +434,7 @@
       "description": "Recibe {photoUrl, style}, arma prompt (T-015), llama Replicate (T-014), guarda avatarUrl+avatarStyle en perfil. Idempotente por hash.",
       "model": "opencode/claude-opus-4-7",
       "reason": "Orquesta API costosa + storage + idempotencia. Opus por robustez.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-014",
         "T-015",
@@ -439,7 +444,13 @@
       "files": [
         "src/rpcs/generate_avatar.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "claude-opus-4-7",
+          "text": "RPC autenticado (requiere ctx.userId). Valida payload {photoUrl, style}, style contra AVATAR_STYLES (T-015). Idempotente por hash user-scoped: sha256(photoUrl+style) → collection avatar_cache, hit devuelve cached=true sin llamar Replicate. Cache-miss llama generateReplicateImage (T-014) con params del template (identityWeight/styleWeight/num_inference_steps=30). Escritura atómica: cache + profile.avatarUrl+avatarStyle en un solo storageWrite. API token y model version leídos de ctx.env (REPLICATE_API_TOKEN / REPLICATE_INSTANT_ID_VERSION), configurables en nakama.yml runtime.env. 9 tests unitarios para parseGenerateAvatarPayload. Verificado end-to-end: RPC registrado en Nakama, AUTH_REQUIRED responde correcto sin session. Fix trivial de nakama.yml: entries de runtime.env sin '=' (CLOUDINARY_*) crasheaban Nakama con 'Invalid runtime environment value' — cambiado a KEY=local + agregados REPLICATE_* placeholders.",
+          "ts": "2026-08-19T01:35:00Z"
+        }
+      ]
     },
     {
       "id": "T-017",
@@ -513,7 +524,7 @@
       "description": "Leave: si status active → marca derrota y termina. Terminate: cleanup + hook postmatch. Signal: para comandos admin.",
       "model": "opencode/claude-opus-4-7",
       "reason": "Terminación con side effects (stats, rank). Opus.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-019"
       ],
@@ -521,7 +532,13 @@
       "files": [
         "src/matches/combat.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/claude-opus-4-7",
+          "text": "Done. matchLeave: en countdown/active dispara KO opcode con reason='abandon', winner=quien queda. matchTerminate: solo log; hooks postmatch (T-035/40/41/42/49) leen state.winner+status. matchSignal: cmds 'status' y 'terminate' con JSON response. Bundle 22kb.",
+          "ts": "2026-08-19T01:33:18Z"
+        }
+      ]
     },
     {
       "id": "T-021",

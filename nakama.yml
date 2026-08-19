@@ -12,6 +12,8 @@ console:
 runtime:
   js_entrypoint: index.js
   env:
-    - CLOUDINARY_CLOUD_NAME
-    - CLOUDINARY_API_KEY
-    - CLOUDINARY_API_SECRET
+    - CLOUDINARY_CLOUD_NAME=local
+    - CLOUDINARY_API_KEY=local
+    - CLOUDINARY_API_SECRET=local
+    - REPLICATE_API_TOKEN=
+    - REPLICATE_INSTANT_ID_VERSION=

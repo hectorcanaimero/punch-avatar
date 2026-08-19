@@ -565,7 +565,7 @@
       "description": "Loop principal: procesa opcodes recibidos, aplica reglas de combate (golpe, bloqueo, especial, charge), broadcast state delta a clientes.",
       "model": "opencode/claude-opus-4-7",
       "reason": "Tick loop 10Hz autoritativo. Corazón del juego, Opus.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "T-019",
         "T-018"
@@ -575,7 +575,13 @@
         "src/matches/combat.ts",
         "src/matches/combat-rules.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/claude-opus-4-7",
+          "text": "Done. matchLoop 10Hz: revert vulnerable, waiting→countdown(3s)→active, procesa PUNCH/BLOCK/SPECIAL vía rules, 5% comic miss self-stagger, broadcast STRIKE/KO/STATE_TICK. Añadí countdownEndTick + vulnerableUntilTick a state. Bundle 30.8kb.",
+          "ts": "2026-08-19T01:47:58Z"
+        }
+      ]
     },
     {
       "id": "T-022",
@@ -607,7 +613,7 @@
       "description": "Casos: golpe conecta, golpe bloqueado lado correcto, golpe bloqueado lado incorrecto, especial ignora bloqueo, charge se acumula, K.O. detectado.",
       "model": "opencode-go/deepseek-v4-flash",
       "reason": "Tests puros. Flash.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "T-022"
       ],
@@ -615,7 +621,13 @@
       "files": [
         "tests/combat-rules.spec.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.6-sol",
+          "text": "Sustitución deepseek-v4-flash→gpt-5.6-sol. 6 tests puros: conexión, bloqueo correcto/incorrecto, especial, carga con cap y K.O.; todos pasan sin mutar reglas.",
+          "ts": "2026-08-19T01:46:57.101Z"
+        }
+      ]
     },
     {
       "id": "T-024",
@@ -753,7 +765,7 @@
       "description": "Array con nombre, retrato URL, HP, daño, ventana telegraph, feint%, combo%, usa especial (bool). Nombres tontos del PRD.",
       "model": "opencode-go/minimax-m2.5",
       "reason": "Roster estático. MiniMax Go.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [],
       "estimateHours": 1,
       "files": [

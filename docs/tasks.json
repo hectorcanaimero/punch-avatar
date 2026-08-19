@@ -1178,7 +1178,7 @@
       "description": "Ofrece pelear vs bot (reutiliza motor career T-032, escogiendo rival de dificultad cercana al rank).",
       "model": "opencode/claude-sonnet-4-6",
       "reason": "Bot fallback con selección de dificultad. Sonnet.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-047",
         "T-032"
@@ -1187,7 +1187,12 @@
       "files": [
         "src/matchmaker/bot-fallback.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "claude-opus-4-7",
+          "text": "src/matchmaker/bot-fallback.ts expone selectBotRivalForRank(rank) (pura, ~200 pts ELO por escalón, cubre bronce→leyenda y satura en rival 9) y startBotFallbackMatchRpc (registrado como start_bot_fallback_match). El RPC relee rankScore autoritativo de Storage (cliente no puede mentir), llama matchCreate('combat', {mode: 'career', rivalIndex}) reutilizando el motor T-032 y devuelve {matchId, rivalIndex, rivalName, mode}. Tests 7/7 (bordes, tiers, saturación, ranks inválidos, fracción). tsc + esbuild OK (bundle 60.9kb)."
+        }
+      ]
     },
     {
       "id": "T-049",

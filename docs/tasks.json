@@ -205,7 +205,7 @@
       "description": "Función pura: alfanumérico, 3-20 chars, no reservadas (admin, root, null). Retorna {valid, reason}.",
       "model": "opencode-go/deepseek-v4-flash",
       "reason": "Validador puro (regex). DeepSeek Flash cost-optimized para pure functions.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-004"
       ],
@@ -213,7 +213,13 @@
       "files": [
         "src/lib/username.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode-go/deepseek-v4-flash",
+          "text": "Implementado validateUsername en src/lib/username.ts. Regex ^[a-zA-Z0-9]{3,20}$, reservadas case-insensitive admin/root/null/nakama. Test node:test en tests/username.spec.ts (7 casos). Typecheck+build OK.",
+          "ts": "2026-08-19T01:09:22.720Z"
+        }
+      ]
     },
     {
       "id": "T-007",
@@ -344,7 +350,7 @@
       "description": "Cliente HTTP para Replicate API: crear prediction, poll de estado, retornar URL final. Retry con backoff.",
       "model": "opencode/gpt-5.5",
       "reason": "HTTP client con retry/polling. GPT 5.5 confiable en async patterns.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-004"
       ],
@@ -352,7 +358,13 @@
       "files": [
         "src/lib/replicate.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.5",
+          "text": "Implementado. Adaptador crea y consulta predictions, retorna la URL final y reintenta 429/5xx/red con backoff acotado. Typecheck sin errores.",
+          "ts": "2026-08-19T01:08:43Z"
+        }
+      ]
     },
     {
       "id": "T-015",
@@ -361,13 +373,19 @@
       "description": "Constantes con prompt positivo/negativo y params por estilo (pixar_3d, anime_shonen, comic_retro, chibi, pixel_16bit).",
       "model": "opencode-go/glm-5.1",
       "reason": "Constantes prompts. Data estática.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [],
       "estimateHours": 0.5,
       "files": [
         "src/data/avatar-prompts.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode-go/glm-5.1",
+          "text": "Done. src/data/avatar-prompts.ts: 5 estilos (pixar_3d, anime_shonen, comic_retro, chibi, pixel_16bit). Prompt positivo via plantilla PRD §3, negative común. Params: identityWeight 0.7-0.8, styleWeight 0.6-0.7 (pixel/chibi más style weight por deformación). Export AVATAR_PROMPTS, AVATAR_STYLES, getAvatarPrompt(). Typecheck + build OK. T-016 consumirá via import.",
+          "ts": "2026-08-19T01:10:18.321Z"
+        }
+      ]
     },
     {
       "id": "T-016",

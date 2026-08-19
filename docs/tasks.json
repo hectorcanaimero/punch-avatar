@@ -714,7 +714,7 @@
       "description": "Busca código en 'rooms', retorna matchId. Cliente hace matchJoin. Error si expirado o lleno.",
       "model": "opencode-go/glm-5.1",
       "reason": "Lookup simple.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "T-026"
       ],
@@ -727,6 +727,11 @@
           "author": "opencode/claude-opus-4-7",
           "text": "Done. Sustituí haiku→opus (hilo). RPC autenticado con payload {code} normalizado via normalizeRoomCode. Errores: AUTH_REQUIRED, PAYLOAD_REQUIRED, PAYLOAD_INVALID_JSON, CODE_REQUIRED, CODE_INVALID, ROOM_NOT_FOUND, ROOM_EXPIRED, MATCH_NOT_AVAILABLE (matchGet null si host cerró). Return {matchId, code, hostUserId}. Registrado en main.",
           "ts": "2026-08-19T02:11:28Z"
+        },
+        {
+          "author": "opencode/gpt-5.6-sol",
+          "text": "Done. Lookup autenticado normaliza código y rechaza sala inexistente, expirada, cerrada o llena (ROOM_FULL). RPC registrado; 6 tests nuevos, 34/34 unitarios y typecheck OK.",
+          "ts": "2026-08-19T02:25:09.425Z"
         }
       ]
     },
@@ -921,7 +926,7 @@
       "description": "Grid de 10 retratos, bloqueados con candado salvo el actual y los ya vencidos. Botón 'pelear' en el actual.",
       "model": "opencode/grok-4.6",
       "reason": "UI condicional con grid rivales. Grok.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-034"
       ],
@@ -929,7 +934,13 @@
       "files": [
         "client/src/screens/CareerLadder.tsx"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/claude-opus-4-7",
+          "text": "Done. Sustituí sonnet→opus (hilo). Escribí primera versión con tierForIndex inline; otro agente reescribió con mejor separación (client/src/lib/career-ladder.ts con classifyRival/normalizeCareerProgress/parseCareerStartResponse/formatCareerError/isCareerCompleted, todo puro y testeable) + su spec. Mi contribución final: habilité allowImportingTsExtensions en client/tsconfig.json para que sus imports .ts compilaran, y removí mi test huérfano. 51/51 unit tests pass.",
+          "ts": "2026-08-19T02:28:17Z"
+        }
+      ]
     },
     {
       "id": "T-037",

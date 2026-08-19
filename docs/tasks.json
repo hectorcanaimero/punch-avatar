@@ -714,7 +714,7 @@
       "description": "Busca código en 'rooms', retorna matchId. Cliente hace matchJoin. Error si expirado o lleno.",
       "model": "opencode-go/glm-5.1",
       "reason": "Lookup simple.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [
         "T-026"
       ],
@@ -1122,13 +1122,18 @@
       "description": "computeElo(rankA, rankB, resultA, cleanKo): retorna nuevos rankScores para ambos. K=24, bonus +5 K.O. limpio.",
       "model": "opencode/claude-opus-4-7",
       "reason": "Elo math crítica. Opus zero-tolerance.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [],
       "estimateHours": 2,
       "files": [
         "src/lib/elo.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "claude-opus-4-7",
+          "text": "src/lib/elo.ts implementa la fórmula Spec 07: computeExpectedScore(rankA, rankB) = 1/(1+10^((rankB-rankA)/400)) y computeElo({rankA, rankB, resultA, cleanKo, k?}) devuelve {rankA, rankB} como enteros clampeados a MIN_RANK=0. Constantes exportadas: K_FACTOR=24, CLEAN_KO_BONUS=5, ELO_SCALE=400, MIN_RANK=0. Override de k por input (spec §Riesgos). Validación: rankA/rankB finitos y ≥0, resultA ∈ {0, 0.5, 1}, k>0. Bonus KO se suma SOLO al ganador (interpretación fiel al frame 'bonus rankScore'); en draw se ignora. Smoke-check: 1000v1000 A wins → +12/-12 (simétrico); 1200v1000 A wins → +6/-6; upset 1000v1200 A wins → +18/-18; KO limpio 1000v1000 → +17/-12; draw 1100v1000 → -3/+3; extremos 0v3000 A pierde → clamp en 0. tsc + esbuild OK (bundle 60.9kb). Tests exhaustivos vienen en T-046."
+        }
+      ]
     },
     {
       "id": "T-046",

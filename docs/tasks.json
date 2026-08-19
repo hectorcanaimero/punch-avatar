@@ -765,13 +765,19 @@
       "description": "Array con nombre, retrato URL, HP, daño, ventana telegraph, feint%, combo%, usa especial (bool). Nombres tontos del PRD.",
       "model": "opencode-go/minimax-m2.5",
       "reason": "Roster estático. MiniMax Go.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [],
       "estimateHours": 1,
       "files": [
         "src/data/rivals.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.6-sol",
+          "text": "Sustitución minimax-m2.5→gpt-5.6-sol. Roster de 10 rivales parametrizado según PRD; telegraph 800→300 ms y especial habilitado desde el rival 6. Typecheck y validación de rangos OK.",
+          "ts": "2026-08-19T01:48:08Z"
+        }
+      ]
     },
     {
       "id": "T-032",

@@ -792,7 +792,7 @@
       "description": "FSM idle→telegraph→strike→recover. Selector de acción probabilístico según parámetros del rival. Emite opcodes TELEGRAPH/STRIKE/FEINT.",
       "model": "opencode/gemini-3.1-pro",
       "reason": "FSM probabilística con timing. Gemini Pro razona bien state machines.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-021",
         "T-031"
@@ -801,7 +801,13 @@
       "files": [
         "src/matches/rival-ai.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gemini-3.7-flash",
+          "text": "Implementado motor FSM idle→telegraph→strike/feint→recover en src/matches/rival-ai.ts. Soporta punches, combos 1-2, feints y especiales (rival 6+). Emite opcodes TELEGRAPH/STRIKE/FEINT. 14 tests pasan.",
+          "ts": "2026-08-19T02:00:00Z"
+        }
+      ]
     },
     {
       "id": "T-033",
@@ -949,7 +955,7 @@
       "description": "Calcula XP con T-037, actualiza perfil, si sube nivel aplica unlock de T-038, notifica al cliente.",
       "model": "opencode/kimi-k3",
       "reason": "Coordinación multi-hook. Kimi K3.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-037",
         "T-038",
@@ -959,7 +965,13 @@
       "files": [
         "src/hooks/postmatch-xp.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "claude-opus-4-7",
+          "text": "Sustitución opencode/kimi-k3→opus (contexto ya cargado en sesión). Hook split en computeProfileUpdate (pura, testable) + applyPostmatchXp (I/O wrap con storageRead+storageWrite). Usa awardXp+levelFromXp de T-037 y unlocksAtLevel de T-038. Loop de oldLevel+1..newLevel acumula unlocks entre múltiples level ups sin duplicar (Set). Actualiza xp, level, unlocks[], wins/losses. kos++ solo si win+cleanKo (proxy conservador, undercount aceptable para MVP; koWin genérico requiere campo nuevo). Preserva otros fields del perfil via spread. 10 tests cubren: win/loss básico, cleanKo win/loss, firstCareerWin level up, múltiples level ups, dedup unlocks, perfiles con defaults, preservación de campos. No wireado a main.ts — es helper para postmatch RPC/matchTerminate futuros (T-020 comment lo anticipa). typecheck + build OK.",
+          "ts": "2026-08-19T01:55:00Z"
+        }
+      ]
     },
     {
       "id": "T-041",

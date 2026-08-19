@@ -699,6 +699,11 @@
           "author": "opencode/kimi-k3",
           "text": "Done. room-code.ts: generateRoomCode (sin 0/O/1/I, rng inyectable) + isValid/normalize. RPC: código único vía Storage 'rooms' (userId sentinel 'system'), matchCreate friendly, expiresAt=+15min (TTL real lo barre T-028). 13 tests, typecheck OK.",
           "ts": "2026-08-19T02:04:23Z"
+        },
+        {
+          "author": "opencode/claude-opus-4-7",
+          "text": "Finalizado (verificación por opus). Code + RPC + registro estaban OK. Faltaba: tests unitarios no ejecutables (import sin .ts extension → Node ESM no resuelve). Fix: agregado .ts en import, npm script 'test:unit' con --experimental-strip-types (13/13 pass). Añadido tests/create_friendly_room.spec.ts (integración contra Nakama: crea sala, códigos únicos, rechaza sin auth) sumado a test:integration.",
+          "ts": "2026-08-19T02:09:37Z"
         }
       ]
     },

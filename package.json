@@ -7,7 +7,8 @@
     "build": "node esbuild.config.mjs",
     "dev": "node esbuild.config.mjs --watch",
     "typecheck": "tsc --noEmit",
-    "test:integration": "node --test tests/auth.spec.ts"
+    "test:integration": "node --test tests/auth.spec.ts tests/create_friendly_room.spec.ts",
+    "test:unit": "node --experimental-strip-types --test tests/room-code.spec.ts"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",

@@ -2,6 +2,7 @@ import { combatMatchHandler } from "./matches/combat";
 import { getProfileRpc } from "./rpcs/get_profile";
 import { pingRpc } from "./rpcs/ping";
 import { registerProfileRpc } from "./rpcs/register_profile";
+import { uploadPhotoUrlRpc } from "./rpcs/upload_photo_url";
 
 function InitModule(
   _ctx: nkruntime.Context,
@@ -11,6 +12,7 @@ function InitModule(
 ): void {
   initializer.registerRpc("ping", pingRpc);
   initializer.registerRpc("register_profile", registerProfileRpc);
+  initializer.registerRpc("get_profile", getProfileRpc);
   initializer.registerRpc("upload_photo_url", uploadPhotoUrlRpc);
   initializer.registerMatch("combat", combatMatchHandler);
 

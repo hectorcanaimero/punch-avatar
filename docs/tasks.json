@@ -338,7 +338,7 @@
       "description": "RPC upload_photo_url que genera presigned URL a Cloudinary. Cliente sube directo. Retorna URL final.",
       "model": "opencode/kimi-k3",
       "reason": "Integración Cloudinary con firma. Kimi K3 sólido con APIs externas.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "T-007"
       ],
@@ -346,7 +346,13 @@
       "files": [
         "src/rpcs/upload_photo_url.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/kimi-k3",
+          "text": "Done. src/rpcs/upload_photo_url.ts: RPC que genera params firmados para upload directo a Cloudinary. signature = SHA256(string_to_sign + api_secret) con signature_algorithm=sha256. Params: folder=punch/photos, formats jpg/jpeg/png/webp, max 10MB, max dim 4096. public_id estable por user+timestamp. Requiere auth. Fix: nakama.yml agregado runtime.env para CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET. main.ts registra upload_photo_url + get_profile (T-008 no lo había registrado). Typecheck+build OK.",
+          "ts": "2026-08-19T01:26:18.694Z"
+        }
+      ]
     },
     {
       "id": "T-013",

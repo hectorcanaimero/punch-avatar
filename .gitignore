@@ -26,6 +26,9 @@ dist/
 docs/ale-runs.jsonl
 docs/tasks.json.lock
 
+# Da Vinci generated assets manifest (regenerated per run)
+/assets/generated/
+
 # Nakama local data (anchored to repo root so src/data/ stays tracked)
 /data/
 /nakama-data/

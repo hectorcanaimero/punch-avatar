@@ -16,10 +16,10 @@
     "declaration": false,
     "sourceMap": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "moduleResolution": "node",
     "types": ["nakama-runtime"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "shared/**/*"],
   "exclude": ["node_modules", "build", "dist"]
 }

@@ -228,7 +228,7 @@
       "description": "Recibe username, valida (T-006), verifica unicidad en Storage, autentica con authenticateCustom customId=username, crea entrada 'profiles' con defaults del PRD §5.",
       "model": "opencode/claude-sonnet-4-6",
       "reason": "RPC con storage + auth + validación. Sonnet balancea capacidad y costo.",
-      "status": "todo",
+      "status": "blocked",
       "dependencies": [
         "T-006"
       ],
@@ -236,7 +236,13 @@
       "files": [
         "src/rpcs/register_profile.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "ale",
+          "text": "Agent did not self-update status. Exit code: 1",
+          "ts": "2026-08-19T01:12:35.301Z"
+        }
+      ]
     },
     {
       "id": "T-008",
@@ -431,7 +437,7 @@
       "description": "Enum de opcodes (PUNCH_LEFT, PUNCH_RIGHT, BLOCK_START, BLOCK_END, SPECIAL, TELEGRAPH, STRIKE, STATE_TICK, KO). Tipos TS compartidos.",
       "model": "opencode-go/glm-5.1",
       "reason": "Enums y tipos. GLM Go simple.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-004"
       ],
@@ -440,7 +446,13 @@
         "src/protocol/opcodes.ts",
         "shared/types.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode-go/glm-5.1",
+          "text": "Done. src/protocol/opcodes.ts: ClientOpcode (1-5: PUNCH_LEFT/RIGHT, BLOCK_START/END, SPECIAL) + ServerOpcode (101-105: TELEGRAPH, STRIKE, STATE_TICK, KO, FEINT). shared/types.ts: Side, MatchStatus, ClientMessage/ServerMessage discriminated unions, PlayerStateView, MatchStateView. Agregado FEINT (105) para T-032 rival AI. tsconfig rootDir→. para incluir shared/. Typecheck+build OK. T-019/T-021 consumirán via import.",
+          "ts": "2026-08-19T01:16:54.020Z"
+        }
+      ]
     },
     {
       "id": "T-019",

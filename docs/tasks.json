@@ -302,7 +302,7 @@
       "description": "Tests de integración: registro exitoso, username duplicado, get profile, update name. Contra Nakama en Docker de test.",
       "model": "opencode-go/deepseek-v4-flash",
       "reason": "Tests integración patrón repetitivo. Flash barato.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [
         "T-007",
         "T-008",
@@ -372,7 +372,7 @@
       "description": "Preview de foto, bounding box del rostro, rechazo si no detecta. Recorte 1:1 antes de subir.",
       "model": "opencode/gemini-3.1-pro",
       "reason": "Canvas + face-api.js + UX. Gemini Pro bueno con librerías visuales.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-011"
       ],
@@ -381,7 +381,13 @@
         "client/src/lib/face-detect.ts",
         "client/src/components/PhotoUpload.tsx"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "gemini",
+          "text": "Done. Detección facial client-side con face-api.js (TinyFaceDetector) en client/src/lib/face-detect.ts. Calcula recorte 1:1 proporcional al rostro para InstantID. Componente PhotoUpload.tsx con drag&drop, selector de selfie, preview con overlay, rechazo si no hay rostro y consentimiento obligatorio (PRD §3). 15 tests unitarios pasan, typecheck OK.",
+          "ts": "2026-08-19T01:36:00Z"
+        }
+      ]
     },
     {
       "id": "T-014",

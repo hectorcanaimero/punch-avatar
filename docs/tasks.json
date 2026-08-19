@@ -714,7 +714,7 @@
       "description": "Busca código en 'rooms', retorna matchId. Cliente hace matchJoin. Error si expirado o lleno.",
       "model": "opencode-go/glm-5.1",
       "reason": "Lookup simple.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-026"
       ],
@@ -722,7 +722,13 @@
       "files": [
         "src/rpcs/join_friendly_room.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/claude-opus-4-7",
+          "text": "Done. Sustituí haiku→opus (hilo). RPC autenticado con payload {code} normalizado via normalizeRoomCode. Errores: AUTH_REQUIRED, PAYLOAD_REQUIRED, PAYLOAD_INVALID_JSON, CODE_REQUIRED, CODE_INVALID, ROOM_NOT_FOUND, ROOM_EXPIRED, MATCH_NOT_AVAILABLE (matchGet null si host cerró). Return {matchId, code, hostUserId}. Registrado en main.",
+          "ts": "2026-08-19T02:11:28Z"
+        }
+      ]
     },
     {
       "id": "T-028",

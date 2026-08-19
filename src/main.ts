@@ -1,6 +1,9 @@
 import { registerLeaderboards } from "./leaderboards/setup";
+import { rankedMatchmakerMatched } from "./matchmaker/config";
 import { combatMatchHandler } from "./matches/combat";
+import { createFriendlyRoomRpc } from "./rpcs/create_friendly_room";
 import { generateAvatarRpc } from "./rpcs/generate_avatar";
+import { joinFriendlyRoomRpc } from "./rpcs/join_friendly_room";
 import { getProfileRpc } from "./rpcs/get_profile";
 import { pingRpc } from "./rpcs/ping";
 import { registerProfileRpc } from "./rpcs/register_profile";
@@ -19,7 +22,10 @@ function InitModule(
   initializer.registerRpc("update_display_name", updateDisplayNameRpc);
   initializer.registerRpc("upload_photo_url", uploadPhotoUrlRpc);
   initializer.registerRpc("generate_avatar", generateAvatarRpc);
+  initializer.registerRpc("create_friendly_room", createFriendlyRoomRpc);
+  initializer.registerRpc("join_friendly_room", joinFriendlyRoomRpc);
   initializer.registerMatch("combat", combatMatchHandler);
+  initializer.registerMatchmakerMatched(rankedMatchmakerMatched);
 
   registerLeaderboards(nk, logger);
 

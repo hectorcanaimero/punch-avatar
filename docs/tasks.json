@@ -890,13 +890,19 @@
       "description": "Data: por cada nivel, qué se desbloquea (skin de guantes, estilo avatar, frase cómica).",
       "model": "opencode-go/minimax-m2.5",
       "reason": "Tabla estática.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [],
       "estimateHours": 1,
       "files": [
         "src/data/unlocks.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/claude-opus-4-7",
+          "text": "Done. Sustituí minimax-m2.5→opus (contexto ya cargado). 21 unlocks en 8 tiers (L1,2,3,5,7,10,15,20,25) de 3 kinds (glove_skin, avatar_style, comic_phrase). Helpers: findUnlock, unlocksAtLevel, unlocksAvailableAtLevel, defaultUnlockIds, unlocksByKind. Cero impacto en balance (PRD §4). Refs para avatar_style matchean AvatarStyle; refs para comic_phrase seedean T-039.",
+          "ts": "2026-08-19T01:52:07Z"
+        }
+      ]
     },
     {
       "id": "T-039",
@@ -1129,7 +1135,7 @@
       "description": "shake(intensity, duration), zoom en especial, freeze frame en K.O. Toggle 'reduce motion' respetado.",
       "model": "opencode/gpt-5.4",
       "reason": "FX cámara con timing y accesibilidad. GPT 5.4.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-024"
       ],
@@ -1137,7 +1143,13 @@
       "files": [
         "client/src/fx/camera.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.4",
+          "text": "Implementado. Shake limitado a 12px/500ms, zoom de especial y freeze K.O. de 100ms. Reduce motion cancela FX activos; typecheck cliente OK.",
+          "ts": "2026-08-19T01:51:15.998Z"
+        }
+      ]
     },
     {
       "id": "T-053",

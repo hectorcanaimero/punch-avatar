@@ -1,3 +1,4 @@
+import { ServerOpcode } from "../protocol/opcodes";
 import type { MatchStatus, Side, Stance } from "../../shared/types";
 
 const MAX_PLAYERS = 2;
@@ -148,13 +149,50 @@ const matchJoin: nkruntime.MatchJoinFunction<CombatState> = (
 
 const matchLeave: nkruntime.MatchLeaveFunction<CombatState> = (
   _ctx,
-  _logger,
+  logger,
   _nk,
-  _dispatcher,
+  dispatcher,
   _tick,
   state,
-  _presences
-) => ({ state });
+  presences
+) => {
+  const leftSessionIds = new Set(presences.map((p) => p.sessionId));
+
+  // WHY: abandono mid-combate cuenta como derrota (PRD §6). En waiting solo removemos.
+  if (state.status === "countdown" || state.status === "active") {
+    const remaining = Object.values(state.players).filter(
+      (p) => !leftSessionIds.has(p.sessionId)
+    );
+    const leaver = Object.values(state.players).find((p) =>
+      leftSessionIds.has(p.sessionId)
+    );
+
+    if (remaining.length === 1 && leaver) {
+      state.status = "ended";
+      state.winner = remaining[0].userId;
+      dispatcher.broadcastMessage(
+        ServerOpcode.KO,
+        JSON.stringify({
+          opcode: ServerOpcode.KO,
+          winnerId: remaining[0].userId,
+          loserId: leaver.userId,
+          reason: "abandon",
+        })
+      );
+      logger.info(
+        `combat: abandon by ${leaver.userId} → winner ${remaining[0].userId}`
+      );
+    } else if (remaining.length === 0) {
+      state.status = "ended";
+      state.winner = null;
+      logger.info("combat: both players left, no winner");
+    }
+  }
+
+  for (const p of presences) delete state.players[p.sessionId];
+  dispatcher.matchLabelUpdate(buildLabel(state));
+  return { state };
+};
 
 const matchLoop: nkruntime.MatchLoopFunction<CombatState> = (
   _ctx,
@@ -168,23 +206,77 @@ const matchLoop: nkruntime.MatchLoopFunction<CombatState> = (
 
 const matchTerminate: nkruntime.MatchTerminateFunction<CombatState> = (
   _ctx,
-  _logger,
+  logger,
   _nk,
   _dispatcher,
   _tick,
   state,
-  _graceSeconds
-) => ({ state });
+  graceSeconds
+) => {
+  // WHY: los hooks postmatch (T-035 career, T-040 xp, T-041 achievements, T-042
+  // leaderboard, T-049 elo) leen state.winner + state.status desde acá. No los
+  // invocamos directo — cada uno se registra en su propia task.
+  logger.info(
+    `combat: terminate mode=${state.mode} status=${state.status} winner=${state.winner ?? "none"} grace=${graceSeconds}s players=${Object.keys(state.players).length}`
+  );
+  return { state };
+};
+
+interface SignalRequest {
+  cmd?: string;
+}
+interface SignalResponse {
+  ok: boolean;
+  status?: MatchStatus;
+  winner?: string | null;
+  players?: number;
+  mode?: CombatMode;
+  message?: string;
+}
 
 const matchSignal: nkruntime.MatchSignalFunction<CombatState> = (
   _ctx,
-  _logger,
+  logger,
   _nk,
   _dispatcher,
   _tick,
   state,
-  _data
-) => ({ state });
+  data
+) => {
+  let cmd = "status";
+  if (data && data.length > 0) {
+    try {
+      const parsed = JSON.parse(data) as SignalRequest;
+      if (typeof parsed.cmd === "string") cmd = parsed.cmd;
+    } catch {
+      const resp: SignalResponse = { ok: false, message: "invalid_json" };
+      return { state, data: JSON.stringify(resp) };
+    }
+  }
+
+  switch (cmd) {
+    case "status": {
+      const resp: SignalResponse = {
+        ok: true,
+        status: state.status,
+        winner: state.winner,
+        players: Object.keys(state.players).length,
+        mode: state.mode,
+      };
+      return { state, data: JSON.stringify(resp) };
+    }
+    case "terminate": {
+      state.status = "ended";
+      logger.info("combat: admin signal → terminate");
+      const resp: SignalResponse = { ok: true, status: state.status };
+      return { state, data: JSON.stringify(resp) };
+    }
+    default: {
+      const resp: SignalResponse = { ok: false, message: "unknown_cmd" };
+      return { state, data: JSON.stringify(resp) };
+    }
+  }
+};
 
 export const combatMatchHandler: nkruntime.MatchHandler<CombatState> = {
   matchInit,

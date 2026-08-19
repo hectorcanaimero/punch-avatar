@@ -228,7 +228,7 @@
       "description": "Recibe username, valida (T-006), verifica unicidad en Storage, autentica con authenticateCustom customId=username, crea entrada 'profiles' con defaults del PRD §5.",
       "model": "opencode/claude-sonnet-4-6",
       "reason": "RPC con storage + auth + validación. Sonnet balancea capacidad y costo.",
-      "status": "blocked",
+      "status": "done",
       "dependencies": [
         "T-006"
       ],
@@ -241,6 +241,11 @@
           "author": "ale",
           "text": "Agent did not self-update status. Exit code: 1",
           "ts": "2026-08-19T01:12:35.301Z"
+        },
+        {
+          "author": "claude-opus-4-7",
+          "text": "Sustitución: opencode/claude-sonnet-4-6 falló con error de server Zen (ref err_864f8d54). Implementado por Opus 4.7 en Claude Code. RPC público, autentica con customId=username, uniqueness via auth.created + doble-check contra profiles storage (evita orphans post-crash). Defaults del PRD §5 (level=1, xp=0, wins/losses/kos=0, rankScore=1000, careerProgress=0, unlocks=[]). Registrado en main.ts. 6 tests nuevos (parseRegisterPayload), typecheck + build OK, verificado end-to-end contra Nakama: happy path, USERNAME_TAKEN, USERNAME_INVALID:reserved, USERNAME_INVALID:invalid_chars.",
+          "ts": "2026-08-19T01:19:30Z"
         }
       ]
     },
@@ -251,7 +256,7 @@
       "description": "Lee colección 'profiles' por userId autenticado, retorna perfil completo o 404.",
       "model": "opencode-go/minimax-m2.5",
       "reason": "Lectura simple de storage. MiniMax M2.5 Go alcanza.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-007"
       ],
@@ -259,7 +264,13 @@
       "files": [
         "src/rpcs/get_profile.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/claude-opus-4-7",
+          "text": "Done. Sustituí minimax-m2.5→opus por afinidad al hilo actual. get_profile acepta payload opcional {userId}; sin userId devuelve el del caller (ctx.userId). 404 → PROFILE_NOT_FOUND. Registrado en main.ts. Bundle 7.1kb, tsc ok.",
+          "ts": "2026-08-19T01:24:45Z"
+        }
+      ]
     },
     {
       "id": "T-009",
@@ -304,7 +315,7 @@
       "description": "Componente con input username, validación en vivo (llama T-006 en cliente), botón 'empezar'. Muestra error si duplicado. Guarda session token.",
       "model": "opencode/gpt-5.4",
       "reason": "UI con estado + validación en vivo. GPT 5.4 fuerte en React.",
-      "status": "todo",
+      "status": "blocked",
       "dependencies": [
         "T-007"
       ],
@@ -312,7 +323,13 @@
       "files": [
         "client/src/screens/Register.tsx"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.4",
+          "text": "Bloqueado: no existe scaffold cliente ni dependencias React/Nakama; solo hay runtime servidor. Falta una task previa que cree client, configure TS/React y exponga validateUsername para browser.",
+          "ts": "2026-08-19T01:23:43Z"
+        }
+      ]
     },
     {
       "id": "T-012",
@@ -321,7 +338,7 @@
       "description": "RPC upload_photo_url que genera presigned URL a Cloudinary. Cliente sube directo. Retorna URL final.",
       "model": "opencode/kimi-k3",
       "reason": "Integración Cloudinary con firma. Kimi K3 sólido con APIs externas.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [
         "T-007"
       ],
@@ -461,7 +478,7 @@
       "description": "Init: crea state (players vacíos, status waiting, tickRate 10). JoinAttempt: valida cupo 2 y modo. Join: agrega player con avatar.",
       "model": "opencode/claude-opus-4-7",
       "reason": "Base match autoritativa. Opus por criticidad server-side.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-018"
       ],
@@ -469,7 +486,13 @@
       "files": [
         "src/matches/combat.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/claude-opus-4-7",
+          "text": "Done. matchInit toma {mode,code}. matchJoinAttempt valida cupo 2, waiting-only, no-dup userId con rejectMessage. matchJoin lee avatar del profile via storageRead (defaults si no existe). Label JSON con contadores. Bundle 5.9kb, tsc ok.",
+          "ts": "2026-08-19T01:22:26Z"
+        }
+      ]
     },
     {
       "id": "T-020",

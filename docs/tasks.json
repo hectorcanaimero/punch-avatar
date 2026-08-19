@@ -279,7 +279,7 @@
       "description": "Cambia displayName (mutable), NO username. Valida longitud, sanitiza.",
       "model": "opencode-go/glm-5.1",
       "reason": "Update trivial. GLM Go.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-007"
       ],
@@ -287,7 +287,13 @@
       "files": [
         "src/rpcs/update_display_name.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode-go/glm-5.1",
+          "text": "Done. src/rpcs/update_display_name.ts: RPC que cambia displayName (NO username). Sanitiza: quita chars de control, colapsa espacios, trim. Valida 2-24 chars. Requiere auth + perfil existente. Preserva resto del perfil en storageWrite. Registrado en main.ts. Typecheck+build OK.",
+          "ts": "2026-08-19T01:28:38.795Z"
+        }
+      ]
     },
     {
       "id": "T-010",

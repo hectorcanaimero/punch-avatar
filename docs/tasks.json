@@ -737,7 +737,7 @@
       "description": "Función scheduled (cron dentro de Nakama runtime) que barre 'rooms' con TTL vencido cada 5min.",
       "model": "opencode-go/mimo-v2.5",
       "reason": "Cron acotado.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "T-026"
       ],
@@ -745,7 +745,13 @@
       "files": [
         "src/jobs/expire-rooms.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/deepseek-v4-pro",
+          "text": "Sustitución mimo-v2.5→deepseek-v4-pro. Worker match 'expire_rooms' (Nakama no tiene cron nativo): matchLoop barre colección 'rooms' y borra expiresAt<=now cada 5min. Funciones puras collectExpiredRoomKeys/shouldSweep con 7 tests. Registrado en main.ts + startExpireRoomsJob. Verificado boot: log 'job programado' + healthcheck 200.",
+          "ts": "2026-08-19T02:14:26Z"
+        }
+      ]
     },
     {
       "id": "T-029",

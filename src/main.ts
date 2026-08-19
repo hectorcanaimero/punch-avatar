@@ -1,3 +1,4 @@
+import { expireRoomsMatchHandler, startExpireRoomsJob } from "./jobs/expire-rooms";
 import { registerLeaderboards } from "./leaderboards/setup";
 import { rankedMatchmakerMatched } from "./matchmaker/config";
 import { combatMatchHandler } from "./matches/combat";
@@ -25,9 +26,12 @@ function InitModule(
   initializer.registerRpc("create_friendly_room", createFriendlyRoomRpc);
   initializer.registerRpc("join_friendly_room", joinFriendlyRoomRpc);
   initializer.registerMatch("combat", combatMatchHandler);
+  initializer.registerMatch("expire_rooms", expireRoomsMatchHandler);
   initializer.registerMatchmakerMatched(rankedMatchmakerMatched);
 
   registerLeaderboards(nk, logger);
+
+  startExpireRoomsJob(nk, logger);
 
   logger.info("punch runtime loaded");
 }

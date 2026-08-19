@@ -6,7 +6,8 @@
 // WHY: deben coincidir con los valores de src/rpcs/create_friendly_room.ts (T-026).
 // Se duplican acá para no acoplar el job a un archivo que aún no está committeado.
 const ROOMS_COLLECTION = "rooms";
-const ROOMS_SYSTEM_USER_ID = "system";
+// WHY: null-UUID como sentinel — "system" era rechazado por Nakama runtime.
+const ROOMS_SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
 
 const SWEEP_INTERVAL_MS = 5 * 60 * 1000; // 5 min
 const LIST_PAGE_SIZE = 100;

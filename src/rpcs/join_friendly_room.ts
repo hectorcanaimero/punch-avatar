@@ -1,7 +1,9 @@
 import { normalizeRoomCode } from "../lib/room-code.ts";
 
 const ROOMS_COLLECTION = "rooms";
-const ROOMS_SYSTEM_USER_ID = "system";
+// WHY: sync con create_friendly_room.ts — null-UUID como sentinel de storage
+// global (Nakama valida userId como UUID; "system" era rechazado en runtime).
+const ROOMS_SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
 
 interface JoinFriendlyRoomRequest {
   code?: string;

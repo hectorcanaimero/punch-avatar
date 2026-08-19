@@ -4,10 +4,12 @@ const ROOMS_COLLECTION = "rooms";
 const ROOM_TTL_MS = 15 * 60 * 1000; // 15 min
 const MAX_CODE_ATTEMPTS = 10;
 
-// WHY: Nakama storage siempre particiona por userId. Usamos un userId sentinel
-// para que join_friendly_room pueda leer cualquier room solo con el código,
-// sin conocer el userId del creador. permissionRead=2 (público) habilita eso.
-const ROOMS_SYSTEM_USER_ID = "system";
+// WHY: Nakama storage siempre particiona por userId. Usamos el null-UUID como
+// sentinel para "server-owned" storage global, así join_friendly_room lee
+// cualquier room solo con el código sin conocer el userId del creador.
+// permissionRead=2 (público) habilita el lookup. Antes se usaba "system" pero
+// storageWrite valida userId como UUID y lo rechazaba en runtime.
+const ROOMS_SYSTEM_USER_ID = "00000000-0000-0000-0000-000000000000";
 
 export interface FriendlyRoomRecord {
   code: string;

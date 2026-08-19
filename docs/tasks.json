@@ -111,7 +111,7 @@
       "description": "Configura runtime TS apuntando a build/index.js, log level, session token TTL.",
       "model": "opencode-go/mimo-v2.5",
       "reason": "YAML corto de config. MiMo Go maneja bien archivos puntuales.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-001"
       ],
@@ -119,7 +119,13 @@
       "files": [
         "nakama.yml"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode-go/mimo-v2.5",
+          "text": "Done. nakama.yml: name=punch-avatar, logger=info, session.token_expiry_sec=600, console.port=7351, runtime.js_entrypoint=index.js. Key fix: yaml key es `js_entrypoint` (no `entrypoint`), relativo a `runtime.path` (default /nakama/data/modules). docker-compose: bundle montado a modules/index.js. Disabled sourcemap en esbuild (Goja falla con sourceMappingURL). Nakama arranca limpio, InitModule ejecuta, healthcheck :7350 → {}, console :7351 → 200.",
+          "ts": "2026-08-19T00:59:00Z"
+        }
+      ]
     },
     {
       "id": "T-003",
@@ -128,7 +134,7 @@
       "description": "tsconfig target es2020 (Goja compat), esbuild bundling a build/index.js. Scripts npm build/dev.",
       "model": "opencode-go/qwen3.8-max",
       "reason": "Scaffolding TS project. Qwen Max Go excelente con estructura repetitiva.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [],
       "estimateHours": 1,
       "files": [
@@ -136,7 +142,13 @@
         "package.json",
         "esbuild.config.mjs"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "grok-4.5",
+          "text": "Scaffold TS: target ES2020, esbuild→build/index.js (cjs/neutral). Scripts build/dev/typecheck. Stub src/main.ts + nakama-runtime types. Verificado npm run build + typecheck.",
+          "ts": "2026-08-19T00:53:54.461Z"
+        }
+      ]
     },
     {
       "id": "T-004",
@@ -145,7 +157,7 @@
       "description": "Punto de entrada TS. Registra RPC 'ping' que devuelve pong, y match handler 'combat' vacío con las 7 funciones estándar.",
       "model": "opencode/gpt-5.4",
       "reason": "InitModule + registro RPCs Nakama. GPT 5.4 sólido en integraciones estándar.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-003"
       ],
@@ -155,7 +167,13 @@
         "src/rpcs/ping.ts",
         "src/matches/combat.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.4",
+          "text": "Implementado. RPC ping retorna {\"pong\":true}; combat registra las 7 funciones estándar a 10 Hz. Typecheck sin errores.",
+          "ts": "2026-08-19T00:59:25Z"
+        }
+      ]
     },
     {
       "id": "T-005",
@@ -164,7 +182,7 @@
       "description": "docker compose up, curl :7350/healthcheck, llamar RPC ping desde consola, verificar log de InitModule.",
       "model": "opencode-go/glm-5.1",
       "reason": "Verificación curl + logs. Barato, cheap task.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-001",
         "T-002",
@@ -172,7 +190,13 @@
       ],
       "estimateHours": 0.5,
       "files": [],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode-go/glm-5.1",
+          "text": "Verificado. docker compose up: nakama+postgres healthy. :7350/healthcheck→200, :7351 console→200. Log InitModule \"punch runtime loaded\". RPC ping registrado y responde {\"pong\":true} via Bearer token (device auth + create=true). Match handler combat registrado sin error. Bundle montado en /nakama/data/modules/index.js.",
+          "ts": "2026-08-19T01:04:23.032Z"
+        }
+      ]
     },
     {
       "id": "T-006",

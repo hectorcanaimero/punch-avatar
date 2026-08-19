@@ -1,0 +1,19 @@
+{
+  "name": "punch-nakama",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Punch Avatar — Nakama TypeScript runtime (Goja)",
+  "scripts": {
+    "build": "node esbuild.config.mjs",
+    "dev": "node esbuild.config.mjs --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "typescript": "^5.7.0",
+    "nakama-runtime": "https://github.com/heroiclabs/nakama-common"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

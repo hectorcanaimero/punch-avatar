@@ -1,0 +1,13 @@
+name: punch-avatar
+
+logger:
+  level: info
+
+session:
+  token_expiry_sec: 600
+
+console:
+  port: 7351
+
+runtime:
+  js_entrypoint: index.js

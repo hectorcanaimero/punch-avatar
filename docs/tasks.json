@@ -737,7 +737,7 @@
       "description": "Función scheduled (cron dentro de Nakama runtime) que barre 'rooms' con TTL vencido cada 5min.",
       "model": "opencode-go/mimo-v2.5",
       "reason": "Cron acotado.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [
         "T-026"
       ],
@@ -771,7 +771,7 @@
       "description": "Input 6-char (uppercase auto), botón unirse, error si no existe.",
       "model": "opencode-go/glm-5.1",
       "reason": "Form simple.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-027"
       ],
@@ -779,7 +779,13 @@
       "files": [
         "client/src/screens/JoinRoom.tsx"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/claude-opus-4-7",
+          "text": "Done. Sustituí glm-5.1→opus (hilo). JoinRoom.tsx con input single-line que filtra char por char (uppercase + solo alfabeto ROOM_CODE_ALPHABE) y trunca a 6. Estados: valid via isValidRoomCode, submitting, serverError con copy amigable mapeada por código (ROOM_NOT_FOUND/EXPIRED/MATCH_NOT_AVAILABLE/etc). onJoined callback recibe {matchId, code, hostUserId}. Style consistente con Register (poster aesthetic). 6 tests unitarios del sanitizer.",
+          "ts": "2026-08-19T02:13:36Z"
+        }
+      ]
     },
     {
       "id": "T-031",
@@ -1206,7 +1212,7 @@
       "description": "Botón buscar, indicador animado de rango ampliándose (±150→±250→±400), opción de bot tras 30s.",
       "model": "opencode/gemini-3.1-pro",
       "reason": "UI con timers y widening visual. Gemini Pro.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [
         "T-047"
       ],

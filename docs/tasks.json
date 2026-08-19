@@ -1212,7 +1212,7 @@
       "description": "Botón buscar, indicador animado de rango ampliándose (±150→±250→±400), opción de bot tras 30s.",
       "model": "opencode/gemini-3.1-pro",
       "reason": "UI con timers y widening visual. Gemini Pro.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "T-047"
       ],
@@ -1220,7 +1220,13 @@
       "files": [
         "client/src/screens/RankedSearch.tsx"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gemini-3.7-flash",
+          "text": "Implementada pantalla RankedSearch con radar de matchmaking, etapas progresivas ±150/±250/±400, indicador de tiers y oferta de sparring bot a los 30s. Integrado con matchmaker y SFX. 14 tests unitarios pasando.",
+          "ts": "2026-08-19T02:15:00Z"
+        }
+      ]
     },
     {
       "id": "T-052",

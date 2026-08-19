@@ -514,7 +514,7 @@
       "description": "resolvePunch(state, side, attacker), resolveBlock(state, side, player), resolveSpecial(state, attacker). Puras y testeables.",
       "model": "opencode/gpt-5.6-sol",
       "reason": "Reglas puras de combate. GPT 5.6 Sol razona matemática con precisión.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-018"
       ],
@@ -522,7 +522,13 @@
       "files": [
         "src/matches/combat-rules.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "gpt-5.6-sol",
+          "text": "Implementado. Reglas inmutables: daño 8/30, bloqueo por lado, carga +10 con cap 100 y K.O. autoritativo. Balance en config; 4 tests pasan. T-023 puede ampliar bordes.",
+          "ts": "2026-08-19T01:21:34Z"
+        }
+      ]
     },
     {
       "id": "T-023",

@@ -714,7 +714,7 @@
       "description": "Busca código en 'rooms', retorna matchId. Cliente hace matchJoin. Error si expirado o lleno.",
       "model": "opencode-go/glm-5.1",
       "reason": "Lookup simple.",
-      "status": "done",
+      "status": "todo",
       "dependencies": [
         "T-026"
       ],
@@ -760,7 +760,7 @@
       "description": "Botón crear, muestra código grande copiable, waiting state hasta que se une otro jugador.",
       "model": "opencode/gpt-5.4",
       "reason": "UI async con copy-to-clipboard. GPT 5.4.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [
         "T-026"
       ],
@@ -886,7 +886,7 @@
       "description": "Al vencer: careerProgress++, marca rival como derrotado, otorga XP. Al perder: no toca progreso.",
       "model": "opencode/kimi-k3",
       "reason": "Efectos storage con reglas. Kimi K3.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-033"
       ],
@@ -894,7 +894,13 @@
       "files": [
         "src/hooks/postmatch-career.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/claude-opus-4-7",
+          "text": "Done. Sustituí kimi-k3→opus (hilo). computeCareerUpdate pure fn: win vs rival esperado (rivalIndex==progressBefore) → advance + wasFirstDefeat=true (dispara firstCareerWinBonus en T-040); revancha vs rival ya vencido → no advance, no bonus; loss → no toca progress (PRD §2). isFinalChampion true al ganar rival N-1. Clamp de rivalIndex a [0,N-1]. applyPostmatchCareer wrappea con storage R/W. Habilité allowImportingTsExtensions+noEmit en tsconfig root para desbloquear node --test con .ts imports. 9/9 tests, 28/28 total.",
+          "ts": "2026-08-19T02:18:36Z"
+        }
+      ]
     },
     {
       "id": "T-036",
@@ -1202,14 +1208,20 @@
       "description": "Bronce/Plata/Oro/Leyenda Tonta desde rankScore. UI badge con color por tier.",
       "model": "opencode-go/glm-5.1",
       "reason": "Función simple + badge.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [],
       "estimateHours": 1,
       "files": [
         "src/lib/tier.ts",
         "client/src/components/TierBadge.tsx"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.6-sol",
+          "text": "Implementado tierFromScore con límites del PRD y badge accesible por color. Sustitución GLM→GPT válida por scope puro y acotado. 2 tests de bordes pasando.",
+          "ts": "2026-08-19T02:15:33Z"
+        }
+      ]
     },
     {
       "id": "T-051",
@@ -1311,7 +1323,7 @@
       "description": "Componente que aparece 300ms al conectar golpe, texto random del pool T-039 desbloqueado.",
       "model": "opencode-go/mimo-v2.5",
       "reason": "Componente visual chico.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-039",
         "T-024"
@@ -1320,7 +1332,13 @@
       "files": [
         "client/src/fx/ComicText.tsx"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.6-sol",
+          "text": "Overlay cómic de 300ms con pool filtrado por unlocks, animación WAAPI y reduced motion. Sustitución de mimo-v2.5 por GPT-5.6 Sol; scope React aislado equivalente. Typecheck cliente OK.",
+          "ts": "2026-08-19T02:15:23.214Z"
+        }
+      ]
     },
     {
       "id": "T-056",

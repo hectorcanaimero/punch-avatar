@@ -302,7 +302,7 @@
       "description": "Tests de integración: registro exitoso, username duplicado, get profile, update name. Contra Nakama en Docker de test.",
       "model": "opencode-go/deepseek-v4-flash",
       "reason": "Tests integración patrón repetitivo. Flash barato.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "T-007",
         "T-008",
@@ -312,7 +312,13 @@
       "files": [
         "tests/auth.spec.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/deepseek-v4-pro",
+          "text": "Sustitución deepseek-v4-flash→deepseek-v4-pro. 6 tests integración vs Nakama real: registro+defaults, duplicado→USERNAME_TAKEN, reservado, get_profile (por userId y propio), update_display_name persiste. Script npm run test:integration. Nota: runtime.env exige key=value (T-012 lo dejó como lista de nombres) — ya corregido en repo.",
+          "ts": "2026-08-19T01:44:26Z"
+        }
+      ]
     },
     {
       "id": "T-011",
@@ -465,7 +471,7 @@
       "description": "Checkbox obligatorio de consentimiento, cards con preview de estilos, loader durante generación con progreso.",
       "model": "opencode/gemini-3.1-pro",
       "reason": "UI multi-estado con previews. Gemini Pro fuerte en layouts complejos.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-013",
         "T-016"
@@ -474,7 +480,13 @@
       "files": [
         "client/src/screens/AvatarStudio.tsx"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "gemini",
+          "text": "Done. Implementado AvatarStudio con selector para los 5 estilos (pixar_3d, anime_shonen, comic_retro, chibi, pixel_16bit), consentimiento explícito obligatorio, loader con etapas y simulación de progreso, y preview de avatar final.",
+          "ts": "2026-08-19T01:42:00Z"
+        }
+      ]
     },
     {
       "id": "T-018",
@@ -553,7 +565,7 @@
       "description": "Loop principal: procesa opcodes recibidos, aplica reglas de combate (golpe, bloqueo, especial, charge), broadcast state delta a clientes.",
       "model": "opencode/claude-opus-4-7",
       "reason": "Tick loop 10Hz autoritativo. Corazón del juego, Opus.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [
         "T-019",
         "T-018"
@@ -595,7 +607,7 @@
       "description": "Casos: golpe conecta, golpe bloqueado lado correcto, golpe bloqueado lado incorrecto, especial ignora bloqueo, charge se acumula, K.O. detectado.",
       "model": "opencode-go/deepseek-v4-flash",
       "reason": "Tests puros. Flash.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [
         "T-022"
       ],
@@ -612,7 +624,7 @@
       "description": "Barras HP jugador/rival, medidor charge, guantes en esquinas inferiores que reaccionan a input.",
       "model": "opencode/grok-4.6",
       "reason": "UI juego con estado sincronizado. Grok fuerte en canvas + game UI.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-018"
       ],
@@ -621,7 +633,13 @@
         "client/src/screens/Combat.tsx",
         "client/src/components/Hud.tsx"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.6-sol",
+          "text": "Implementado por GPT 5.6 Sol (sustituye Grok 4.6): HUD responsive con HP/carga, rival y guantes controlados para prediction/touch. Typecheck cliente OK.",
+          "ts": "2026-08-19T01:44:49Z"
+        }
+      ]
     },
     {
       "id": "T-025",

@@ -879,7 +879,7 @@
       "description": "Funciones puras: awardXp(match), xpNeededForLevel(n)=100*n^1.5, levelFromXp(xp).",
       "model": "opencode-go/deepseek-v4-flash",
       "reason": "Fórmulas puras. Flash.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-007"
       ],
@@ -887,7 +887,13 @@
       "files": [
         "src/lib/xp.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/deepseek-v4-pro",
+          "text": "Sustitución deepseek-v4-flash→deepseek-v4-pro. src/lib/xp.ts (puras) + src/config/xp.ts (balance). awardXp: 50/10/20/100. xpNeededForLevel(n)=100*n^1.5 = XP para subir de n a n+1; levelFromXp inversa (nivel 1 = 0 XP). 16 tests pasan (bundle esbuild). Alineado con UNLOCKS (T-038).",
+          "ts": "2026-08-19T01:53:16Z"
+        }
+      ]
     },
     {
       "id": "T-038",
@@ -957,7 +963,7 @@
       "description": "Definición de 4 logros iniciales (first_blood, cara_de_piedra, remontada, campeon). Verificador idempotente contra 'achievements' storage.",
       "model": "opencode/qwen3.7-max",
       "reason": "Lógica condiciones + idempotencia. Qwen Max fuerte en logic puzzles.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [
         "T-020"
       ],

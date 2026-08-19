@@ -685,7 +685,7 @@
       "description": "Genera código 6-char (sin 0/O/1/I), verifica unicidad, crea match con mode friendly, guarda en Storage 'rooms' con TTL 15min.",
       "model": "opencode/kimi-k3",
       "reason": "Storage + generación con verificación. Kimi K3.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [
         "T-019"
       ],
@@ -1211,7 +1211,7 @@
       "description": "Cargar y disparar SFX por evento (pow, whoosh, block, special, ko). Music loops lobby/combate.",
       "model": "opencode/kimi-k3",
       "reason": "Audio con estados. Kimi K3.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-024"
       ],
@@ -1220,7 +1220,13 @@
         "client/src/audio/manager.ts",
         "client/src/audio/sfx-map.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/deepseek-v4-pro",
+          "text": "Sustitución kimi-k3→deepseek-v4-pro. AudioManager (Web Audio API) + catálogo sfx-map. SFX procedurales (pow/whoosh/block/special/ko) + música loop lobby/combate. Sin assets binarios → síntesis. setMuted/setMasterVolume/dispose, AudioContext lazy. 5 tests catálogo pasan, typecheck cliente OK.",
+          "ts": "2026-08-19T02:03:01Z"
+        }
+      ]
     },
     {
       "id": "T-054",

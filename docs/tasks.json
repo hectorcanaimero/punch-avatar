@@ -685,7 +685,7 @@
       "description": "Genera código 6-char (sin 0/O/1/I), verifica unicidad, crea match con mode friendly, guarda en Storage 'rooms' con TTL 15min.",
       "model": "opencode/kimi-k3",
       "reason": "Storage + generación con verificación. Kimi K3.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "T-019"
       ],
@@ -694,7 +694,13 @@
         "src/rpcs/create_friendly_room.ts",
         "src/lib/room-code.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/kimi-k3",
+          "text": "Done. room-code.ts: generateRoomCode (sin 0/O/1/I, rng inyectable) + isValid/normalize. RPC: código único vía Storage 'rooms' (userId sentinel 'system'), matchCreate friendly, expiresAt=+15min (TTL real lo barre T-028). 13 tests, typecheck OK.",
+          "ts": "2026-08-19T02:04:23Z"
+        }
+      ]
     },
     {
       "id": "T-027",
@@ -1034,7 +1040,7 @@
       "description": "Muestra avatar, nombre, nivel/xp bar, wins/losses/kos, grid de logros desbloqueados/bloqueados.",
       "model": "opencode/gemini-3.1-pro",
       "reason": "UI perfil compuesta. Gemini Pro.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-008",
         "T-041"
@@ -1043,7 +1049,13 @@
       "files": [
         "client/src/screens/Profile.tsx"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gemini-3.7-flash",
+          "text": "Implementado Profile.tsx con avatar, progresión nivel/XP bar (fórmula xpNeeded), stats de combate (victorias, derrotas, kos, winrate, elo, carrera), y grid de 4 logros desbloqueados/bloqueados. 20 tests unitarios en tests/profile.spec.ts. Typechecks OK.",
+          "ts": "2026-08-19T02:07:00Z"
+        }
+      ]
     },
     {
       "id": "T-044",

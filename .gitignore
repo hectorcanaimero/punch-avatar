@@ -26,9 +26,9 @@ dist/
 docs/ale-runs.jsonl
 docs/tasks.json.lock
 
-# Nakama local data
-data/
-nakama-data/
+# Nakama local data (anchored to repo root so src/data/ stays tracked)
+/data/
+/nakama-data/
 
 # Editor
 .vscode/

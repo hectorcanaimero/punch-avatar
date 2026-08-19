@@ -93,26 +93,62 @@ Antes de decir "está listo":
 
 **Nunca claimes "done" sin evidencia real de que corre.**
 
-### Paso 5 — Finalizar
+### Paso 5 — Finalizar (los 3 pasos son OBLIGATORIOS, en este orden)
 
-1. **Cambiá `status`** en `tasks.json`:
-   - `done` — completa y verificada.
-   - `blocked` — no pudiste terminar por dependencia externa o ambigüedad; explicá.
+> **⚠️ Regla dura del proyecto**: una task no está terminada hasta que los tres pasos siguientes están hechos. Sin excepciones. Si te falta alguno, la task queda **incompleta** y el próximo agente no puede confiar en el estado del repo.
+
+**1. Actualizá `status` en `docs/tasks.json`**:
+   - `done` — completa y verificada (Paso 4).
+   - `blocked` — no pudiste terminar por dependencia externa o ambigüedad; explicá en el comment.
    - Volvé a `todo` solo si abandonás la task para que otro la tome.
+   - **Nunca dejes la task en `in-progress`** al terminar tu turno. Es un huérfano — el próximo agente no sabe si estás corriendo o crasheaste.
 
-2. **Agregá un comment** al array `comments` de la task:
+**2. Agregá un comment** al array `comments` de la task:
    ```json
    {
-     "author": "sonnet",
+     "author": "opencode-go/glm-5.1",
      "text": "Implementado. docker-compose expone 7350/7351/7349. Healthcheck de postgres tarda ~5s en primer boot.",
      "ts": "2026-08-19T14:32:11Z"
    }
    ```
+   - `author` = model id completo (ej. `opencode/claude-sonnet-4-6`, `opencode-go/mimo-v2.5`, `claude-opus-4-7`), o `"human"` si fue un humano.
+   - `ts` = ISO 8601 UTC.
+   - Contenido según sección "Formato del comment" más abajo.
 
-3. Si vas a hacer commit git:
-   - Conventional commits: `feat(auth): validador username`, `fix(elo): cap rankScore >= 0`.
-   - Un commit por task. Sin mezclar refactor con feature.
+**3. Sincronizá el dashboard** con el estado actualizado de `tasks.json`:
+   ```bash
+   node scripts/ale.mjs sync
+   ```
+   Esto reescribe `docs/dashboard/index.html` reflejando tu status + comment. **Siempre corré esto antes del commit** — el dashboard es la vista canónica del progreso para el resto del equipo, tiene que estar al día.
+
+**4. Commit + push a git — SIEMPRE, sin excepción**:
+   ```bash
+   git add <archivos-de-tu-task> docs/tasks.json docs/dashboard/index.html
+   git commit -m "feat(scope): descripción corta (T-XXX)"
+   git push
+   ```
+   - **Conventional commits**: `feat(auth): validador username (T-006)`, `fix(elo): cap rankScore >= 0 (T-045)`.
+   - **Un commit = una task** cerrada. Incluí SIEMPRE `docs/tasks.json` (tu status update) en el mismo commit que el código. Sin eso, tu trabajo queda en el árbol pero no queda registrado en la historia del proyecto.
+   - Incluí también `docs/dashboard/index.html` si cambió (auto-sync de Ale).
    - **Nunca** agregues `Co-Authored-By` ni menciones a agentes en el mensaje.
+   - **Nunca** hagas `git push --force` a `main`.
+   - Si el `git push` es rechazado (non-fast-forward): `git pull --rebase origin main` y volvé a intentar. No `--force`.
+   - Si tenés archivos sin trackear que no son tuyos (otro agente en paralelo), agregá SOLO los tuyos por nombre — no uses `git add -A` ni `git add .` a ciegas.
+
+**Regla de oro**: si tu task quedó `done` en `tasks.json` pero NO commiteaste + pusheaste, para el resto del mundo tu task **no existe**. El próximo agente que haga `git pull` va a ver `status=todo` y va a hacer el trabajo de nuevo. Peor: dos agentes editando el mismo archivo en paralelo = merge conflict que rompe el flow.
+
+### Checklist final (releé esto ANTES de reportar "done")
+
+- [ ] Código en los archivos correctos, según `task.files`.
+- [ ] Tests corridos y pasando (typecheck + build + suites relevantes).
+- [ ] Verificación real de que corre (Nakama boot, curl al RPC, etc. según Paso 4).
+- [ ] `docs/tasks.json` con `status="done"` y comment nuevo con `author`, `text`, `ts`.
+- [ ] `node scripts/ale.mjs sync` ejecutado — dashboard al día.
+- [ ] `git add` con los archivos justos (tuyos + tasks.json + dashboard).
+- [ ] `git commit` con mensaje conventional, sin `Co-Authored-By`.
+- [ ] `git push` exitoso (si falla non-fast-forward: `git pull --rebase` primero).
+
+Si algún item queda sin marcar, tu task **NO ESTÁ TERMINADA**. Marcala como `blocked` y dejá un comment explicando qué falta.
 
 ---
 
@@ -227,6 +263,11 @@ Antes de decir "está listo":
 8. **No hacés refactors "de paso"** — cada refactor merece su propia task.
 9. **No hacés generación de imagen client-side** — la API key de Replicate solo vive en el servidor Nakama.
 10. **No confiés en timestamps del cliente** para lógica de gameplay.
+11. **No dejás tasks en `in-progress`** al terminar tu turno. Cerrala como `done` o `blocked` — el `in-progress` huérfano rompe la detección de ready tasks.
+12. **No terminás tu turno sin `git commit + git push`** con `docs/tasks.json` incluido. Task done sin push = task inexistente para el resto del equipo.
+13. **No corrés `git add -A` / `git add .`** a ciegas cuando hay otro agente en paralelo. Agregá archivos por nombre para no tragar el trabajo ajeno.
+14. **No hacés `git push --force`** a `main`. Si el push falla, `git pull --rebase` y volvé a pushear.
+15. **No skipeás `node scripts/ale.mjs sync`** antes del commit. Dashboard desactualizado desorienta al resto.
 
 ---
 

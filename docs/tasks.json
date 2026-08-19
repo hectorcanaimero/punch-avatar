@@ -760,7 +760,7 @@
       "description": "Botón crear, muestra código grande copiable, waiting state hasta que se une otro jugador.",
       "model": "opencode/gpt-5.4",
       "reason": "UI async con copy-to-clipboard. GPT 5.4.",
-      "status": "in-progress",
+      "status": "done",
       "dependencies": [
         "T-026"
       ],
@@ -768,7 +768,13 @@
       "files": [
         "client/src/screens/CreateRoom.tsx"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.6-sol",
+          "text": "Done. Sustitución gpt-5.4→gpt-5.6-sol. Crea y une al host al match, copia el código y espera presencia rival sin duplicar callback. Estados loading/error y UI mobile-first accesible. Typecheck cliente OK.",
+          "ts": "2026-08-19T02:24:56.501Z"
+        }
+      ]
     },
     {
       "id": "T-030",

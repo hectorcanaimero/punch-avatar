@@ -816,7 +816,7 @@
       "description": "Match handler modo career: 1 jugador + rival IA (T-032). Contador de knockdowns (2-3 antes de K.O. final).",
       "model": "opencode/claude-sonnet-4-6",
       "reason": "Extensión match handler. Sonnet.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [
         "T-021",
         "T-032"
@@ -1046,7 +1046,7 @@
       "description": "Tabs 'Más K.O.s' y 'Racha actual', lista paginada, resalta usuario actual.",
       "model": "opencode/grok-4.6",
       "reason": "UI leaderboards con tabs y paginación. Grok.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-042"
       ],
@@ -1054,7 +1054,13 @@
       "files": [
         "client/src/screens/Leaderboards.tsx"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.6-sol",
+          "text": "Implementado. Sustituí grok→gpt-5.6-sol: tabs most_kos/current_streak, paginación por cursor, estados loading/error/vacío y usuario actual resaltado. Typecheck cliente OK.",
+          "ts": "2026-08-19T02:02:18Z"
+        }
+      ]
     },
     {
       "id": "T-045",
@@ -1095,7 +1101,7 @@
       "description": "Cliente llama matchmakerAdd con rankScore, retry a 10s (±250), 20s (±400). Server valida en accept callback.",
       "model": "opencode/gpt-5.6-sol",
       "reason": "Matchmaker widening UX-sensible. GPT 5.6 Sol razona timing.",
-      "status": "todo",
+      "status": "in-progress",
       "dependencies": [
         "T-019"
       ],
@@ -1223,7 +1229,7 @@
       "description": "Sprites/tweens: guantes al golpear, hurt reaction, KO caída, golpe fallido cómico.",
       "model": "opencode/grok-4.6",
       "reason": "Animaciones con timing. Grok.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-025"
       ],
@@ -1231,7 +1237,13 @@
       "files": [
         "client/src/fx/animations.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "opencode/gpt-5.4",
+          "text": "Implementadas animaciones WAAPI de guantes, idle/telegraph, hurt, KO y fallo cómico; reduce motion y cleanup incluidos. Typecheck TS 5.9 OK. Sustitución de Grok válida por scope TS aislado.",
+          "ts": "2026-08-19T01:59:15.905Z"
+        }
+      ]
     },
     {
       "id": "T-055",

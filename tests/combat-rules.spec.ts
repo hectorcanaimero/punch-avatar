@@ -42,11 +42,23 @@ describe("combat rules", () => {
     assert.equal(state.players.defender.health, 100);
   });
 
-  test("el bloqueo solo anula el golpe del lado correcto", () => {
+  test("un golpe bloqueado del lado correcto no causa daño ni carga", () => {
     const state = resolveBlock(activeState(), "left", "defender");
 
     assert.equal(resolvePunch(state, "left", "attacker"), state);
-    assert.equal(resolvePunch(state, "right", "attacker").players.defender.health, 92);
+    assert.equal(state.players.defender.health, 100);
+    assert.equal(state.players.attacker.charge, 0);
+    assert.equal(state.players.defender.charge, 0);
+  });
+
+  test("un bloqueo del lado incorrecto permite que el golpe conecte", () => {
+    const state = resolveBlock(activeState(), "left", "defender");
+
+    const result = resolvePunch(state, "right", "attacker");
+
+    assert.equal(result.players.defender.health, 92);
+    assert.equal(result.players.attacker.charge, 10);
+    assert.equal(result.players.defender.charge, 10);
   });
 
   test("el especial requiere carga, ignora bloqueo y resetea al atacante", () => {
@@ -69,5 +81,16 @@ describe("combat rules", () => {
     assert.equal(result.players.defender.health, 0);
     assert.equal(result.status, "ended");
     assert.equal(result.winner, "user-a");
+  });
+
+  test("la carga acumulada nunca supera el máximo", () => {
+    const state = activeState();
+    state.players.attacker.charge = 95;
+    state.players.defender.charge = 95;
+
+    const result = resolvePunch(state, "left", "attacker");
+
+    assert.equal(result.players.attacker.charge, 100);
+    assert.equal(result.players.defender.charge, 100);
   });
 });

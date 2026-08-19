@@ -1,4 +1,4 @@
-import { normalizeRoomCode } from "../lib/room-code";
+import { normalizeRoomCode } from "../lib/room-code.ts";
 
 const ROOMS_COLLECTION = "rooms";
 const ROOMS_SYSTEM_USER_ID = "system";
@@ -80,6 +80,9 @@ export const joinFriendlyRoomRpc: nkruntime.RpcFunction = (
   const match = nk.matchGet(record.matchId);
   if (!match) {
     throw new Error("MATCH_NOT_AVAILABLE");
+  }
+  if (match.size >= 2) {
+    throw new Error("ROOM_FULL");
   }
 
   const response: JoinFriendlyRoomResponse = {

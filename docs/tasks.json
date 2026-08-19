@@ -1229,7 +1229,7 @@
       "description": "En modo ranked, al terminar match, llama T-045 con datos server-side, actualiza rankScore en ambos perfiles.",
       "model": "opencode/claude-opus-4-7",
       "reason": "Escritura crítica de rango. Opus.",
-      "status": "todo",
+      "status": "done",
       "dependencies": [
         "T-045",
         "T-020"
@@ -1238,7 +1238,12 @@
       "files": [
         "src/hooks/postmatch-ranked.ts"
       ],
-      "comments": []
+      "comments": [
+        {
+          "author": "claude-opus-4-7",
+          "text": "src/hooks/postmatch-ranked.ts sigue el patrón de postmatch-career (T-035): función pura computeRankedUpdate(profileA, profileB, {userIdA, userIdB, resultA, cleanKo, k?}) + wrapper Nakama applyPostmatchRanked(nk, logger, input) que lee ambos perfiles autoritativos, invoca computeElo (T-045) y solo escribe los que efectivamente cambian (evita write-amp en debut). Default rankScore=1000 (Spec 07 §Alcance) para perfiles nuevos. Valida rank finito y ≥0 (RANK_SCORE_INVALID), userIds no vacíos ni duplicados. En draw se descarta cleanKo. clean KO = ganador termina con HP full (PRD §Ranked línea 210) — la detección en sí es responsabilidad del futuro glue task en matchTerminate. Preserva otras keys del profile (spread). Smoke-check: 1000v1000 A wins clean KO → 1017/988; perfil vacío arranca en 1000; rank negativo → RANK_SCORE_INVALID; draw 1100v1000 → 1097/1003 (ignora KO). tsc + esbuild OK (bundle 61.0kb). Wiring en matchTerminate queda para task de integración (comment en combat.ts:657-659 explicita el patrón: 'cada hook se registra en su propia task')."
+        }
+      ]
     },
     {
       "id": "T-050",
